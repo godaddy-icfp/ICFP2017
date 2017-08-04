@@ -1,7 +1,6 @@
 package com.godaddy.icfp2017.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.godaddy.icfp2017.InboundMessageParser;
 import com.godaddy.icfp2017.models.GameplayP2S;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.HandShakeP2S;

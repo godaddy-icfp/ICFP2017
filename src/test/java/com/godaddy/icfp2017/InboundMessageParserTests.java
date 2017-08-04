@@ -4,6 +4,7 @@ import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.HandshakeS2P;
 import com.godaddy.icfp2017.models.S2P;
 import com.godaddy.icfp2017.models.SetupS2P;
+import com.godaddy.icfp2017.services.InboundMessageParser;
 import com.google.common.io.Resources;
 import org.testng.annotations.Test;
 

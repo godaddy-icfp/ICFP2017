@@ -1,4 +1,4 @@
-package com.godaddy.icfp2017;
+package com.godaddy.icfp2017.services;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
