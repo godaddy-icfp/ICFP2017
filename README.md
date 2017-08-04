@@ -11,5 +11,8 @@ Please use the issues tab for known actions that need work to ensure we have a g
 - John Lewis is creating a Java application for this work
 
 ## How to build and run this
+
+```bash
 ./gradlew clean build shadowJar
 cat sampleSetupInput.json | java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar 
+```
