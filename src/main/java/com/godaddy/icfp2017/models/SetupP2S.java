@@ -1,0 +1,27 @@
+package com.godaddy.icfp2017.models;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class SetupP2S {
+  @JsonProperty("ready")
+  private int ready;
+
+  @JsonProperty("state")
+  private State state;
+
+  public int getReady() {
+    return ready;
+  }
+
+  public void setReady(final int ready) {
+    this.ready = ready;
+  }
+
+  public State getState() {
+    return state;
+  }
+
+  public void setState(final State state) {
+    this.state = state;
+  }
+}
