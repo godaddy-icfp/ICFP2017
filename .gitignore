@@ -25,3 +25,5 @@ out/
 .gradle/
 build/
 ICFP2017.iml
+classes/
+*.iml

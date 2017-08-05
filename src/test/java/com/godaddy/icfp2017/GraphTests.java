@@ -22,4 +22,15 @@ public class GraphTests {
     final SimpleWeightedGraph<Site, River> siteRiverSimpleWeightedGraph = GameLogicImpl.buildGraph(setupS2P);
 
   }
+
+  @Test
+  public void () throws IOException {
+    final ClassLoader classLoader = GraphTests.class.getClassLoader();
+    final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleGame.json");
+
+    final SetupS2P setupS2P = new ObjectMapper().readValue(resourceAsStream, SetupS2P.class);
+
+    final SimpleWeightedGraph<Site, River> siteRiverSimpleWeightedGraph = GameLogicImpl.buildGraph(setupS2P);
+
+  }
 }
