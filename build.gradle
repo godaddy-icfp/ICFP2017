@@ -29,15 +29,14 @@ dependencies {
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: '2.9.0'
     compile group: 'com.google.guava', name: 'guava', version: '22.0'
     compile group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.1'
+    compile group: 'com.esotericsoftware', name: 'kryo', version: '4.0.1'
+    compile group: 'de.javakaffee', name: 'kryo-serializers', version: '0.42'
 
     compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4'
-
-
 
     testCompile group: 'org.testng', name: 'testng', version: '6.+'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '2.+'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.+'
-
 }
 
 

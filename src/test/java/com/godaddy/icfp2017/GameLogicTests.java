@@ -6,6 +6,7 @@ import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.SetupP2S;
 import com.godaddy.icfp2017.models.SetupS2P;
 import com.godaddy.icfp2017.models.Site;
+import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.Algorithms;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.GraphTests;
@@ -53,22 +54,38 @@ public class GameLogicTests {
          });
   }
 
-    @Test
-    public void run_game_and_one_move_test_weights() throws IOException {
-        GameLogic impl = new GameLogic();
-        final SetupP2S setup = impl.setup(loadSetup());
-        final GameplayP2S move = impl.move(loadMoves(setup));
-        SimpleWeightedGraph<Site, River> graph = move.getState().getGraph();
+  @Test
+  public void run_game_and_one_move_test_weights() throws IOException {
+    GameLogic impl = new GameLogic();
+    final SetupP2S setup = impl.setup(loadSetup());
+    final GameplayP2S move = impl.move(loadMoves(setup));
+    SimpleWeightedGraph<Site, River> graph = move.getState().getGraph();
 
-        // tested values
-        ImmutableList<Double> expectedValues = ImmutableList.of(1.0, 10.0, 1.0, 10.0, 10.0, 10.0, 10.0, 1.0, 10.0, 10.0, 1.0, 10.0);
+    // tested values
+    ImmutableList<Double> expectedValues =
+        ImmutableList.of(1.0, 10.0, 1.0, 10.0, 10.0, 10.0, 10.0, 1.0, 10.0, 10.0, 1.0, 10.0);
 
-        int i = 0;
-        for (River river : graph.edgeSet()) {
-            assertThat(graph.getEdgeWeight(river) == expectedValues.indexOf(i));
-            i += 1;
-        }
+    int i = 0;
+    for (River river : graph.edgeSet()) {
+      assertThat(graph.getEdgeWeight(river) == expectedValues.indexOf(i));
+      i += 1;
     }
+  }
+
+  @Test
+  public void run_() throws IOException {
+
+    GameLogic impl = new GameLogic();
+    final SetupP2S setup = impl.setup(loadSetup());
+
+    final String s = JsonMapper.Instance.writeValueAsString(setup.getState());
+
+    assertThat(s).isNotNull();
+
+    final State state = JsonMapper.Instance.readValue(s, State.class);
+
+    assertThat(state).isNotNull();
+  }
 
   private SetupS2P loadSetup() throws IOException {
 

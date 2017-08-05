@@ -1,10 +1,16 @@
 package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.godaddy.icfp2017.models.serialization.BinaryStateDeserializer;
+import com.godaddy.icfp2017.models.serialization.BinaryStateSerializer;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
+@JsonSerialize(using = BinaryStateSerializer.class)
+@JsonDeserialize(using = BinaryStateDeserializer.class)
 public class State {
   @JsonProperty
   private int punter;
@@ -18,7 +24,7 @@ public class State {
   @JsonProperty
   private ImmutableSet<Site> mines;
 
-  private FloydWarshallShortestPaths<Site, River> shortestPaths;
+  private transient FloydWarshallShortestPaths<Site, River> shortestPaths;
 
   public int getPunter() {
     return punter;
