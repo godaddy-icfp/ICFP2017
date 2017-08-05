@@ -24,7 +24,14 @@ public class GameLogic {
 
   private ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
-          Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new);
+          Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
+          Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new);
+
+  // These are constants that value algorithms over all rivers
+  // It allows us to select which algorithms are valuable (and which are not) for this particular move
+  ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
+      Algorithms.AdjacentToMine, 1.0,
+      Algorithms.AdjacentToPath, 1.0);
 
   public GameLogic() {
     executorService = Executors.newFixedThreadPool(Algorithms.values().length);
@@ -129,12 +136,6 @@ public class GameLogic {
 
     // todo initialize a reasonable claim
 
-    // These are constants that value algorithms over all rivers
-    // It allows us to select which algorithms are valuable (and which are not) for this particular move
-    ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
-        Algorithms.AdjacentToMine, 1.0
-                                                                      );
-
     // Compute all the weight
     River bestRiver = this.computeWeightOnGraph(currentState, algorithmValues);
 
@@ -156,7 +157,7 @@ public class GameLogic {
 
   private void runAllAlgorithms(final CountDownLatch completeLatch, final State state) {
     algorithmCreators.forEach((algo, creator) -> {
-      final GraphAlgorithm graphAlgorithm = creator.create(state);
+      final GraphAlgorithm graphAlgorithm = creator.create(algo, state);
       executorService.submit(() -> {
         graphAlgorithm.run();
         completeLatch.countDown();

@@ -6,10 +6,12 @@ import com.godaddy.icfp2017.models.State;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
 public class AdjacentToPathAlgorithm implements GraphAlgorithm {
+  private final Algorithms algorithm;
   private final SimpleWeightedGraph<Site, River> graph;
   private final State state;
 
-  public AdjacentToPathAlgorithm(final State state) {
+  public AdjacentToPathAlgorithm(final Algorithms algorithm, final State state) {
+    this.algorithm = algorithm;
     this.graph = state.getGraph();
     this.state = state;
   }
@@ -35,10 +37,10 @@ public class AdjacentToPathAlgorithm implements GraphAlgorithm {
                 }
 
                 if (sourceConnected && targetConnected) {
-                  river.getAlgorithmWeights().put(Algorithms.AdjacentToPath, Weights.Decent);
+                  river.getAlgorithmWeights().put(algorithm, Weights.Decent);
                 }
                 else if (sourceConnected || targetConnected) {
-                  river.getAlgorithmWeights().put(Algorithms.AdjacentToPath, Weights.Desired);
+                  river.getAlgorithmWeights().put(algorithm, Weights.Desired);
                 }
               });
   }
