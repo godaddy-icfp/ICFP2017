@@ -28,6 +28,10 @@ dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.0'
     compile group: 'com.google.guava', name: 'guava', version: '22.0'
 
+    compile group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4'
+
+
+
     testCompile group: 'org.testng', name: 'testng', version: '6.+'
     testCompile group: 'org.mockito', name: 'mockito-all', version: '2.+'
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.+'
@@ -45,5 +49,5 @@ jar {
 }
 
 run {
-    args 'sampleSetupInput.json'
+    args '-mode=online', '-host=punter.inf.ed.ac.uk',  '-port=9105'
 }

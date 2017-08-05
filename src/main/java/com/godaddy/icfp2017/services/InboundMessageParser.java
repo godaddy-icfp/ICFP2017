@@ -12,18 +12,14 @@ import com.godaddy.icfp2017.models.SetupS2P;
 import java.io.InputStream;
 
 public class InboundMessageParser {
+  private final ObjectMapper mapper = new ObjectMapper();
+  final JsonFactory factory = mapper.getFactory();
 
-  private final JsonParser parser;
-
-  public InboundMessageParser(InputStream inputStream) throws Exception {
-    ObjectMapper mapper = new ObjectMapper();
-    JsonFactory factory = mapper.getFactory();
-    parser = factory.createParser(inputStream);
-  }
-
-  public S2P getNextMessage() throws Exception {
+  public S2P getNextMessage(String input) throws Exception {
     S2P s2p = null;
 
+
+    final JsonParser parser = factory.createParser(input);
     if (parser.nextToken() == JsonToken.START_OBJECT) {
       switch(parser.nextFieldName()) {
         case "you":
