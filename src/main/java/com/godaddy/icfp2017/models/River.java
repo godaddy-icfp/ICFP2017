@@ -3,6 +3,7 @@ package com.godaddy.icfp2017.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.godaddy.icfp2017.services.Algorithms;
+import com.google.common.base.Objects;
 
 import java.util.HashMap;
 
@@ -19,6 +20,14 @@ public class River {
 
   @JsonProperty("claimedBy")
   private int claimedBy = -1;
+
+  public River() {
+  }
+
+  public River(final int source, final int target) {
+    this.source = source;
+    this.target = target;
+  }
 
   public int getSource() {
     return source;
@@ -54,5 +63,17 @@ public class River {
 
   public boolean isClaimed() {
     return this.claimedBy >= 0;
+  }
+
+  @Override
+  public boolean equals(final Object obj) {
+    return obj instanceof River &&
+           ((River) obj).source == source &&
+           ((River) obj).target == target;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(source, target);
   }
 }
