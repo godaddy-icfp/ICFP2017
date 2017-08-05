@@ -3,6 +3,7 @@ package com.godaddy.icfp2017.services;
 import com.godaddy.icfp2017.models.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
@@ -26,14 +27,16 @@ public class GameLogic {
       ImmutableMap.of(
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
-          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new);
+          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
+          Algorithms.MineToMine, MineToMineAlgorithm::new);
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
   private final ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
       Algorithms.AdjacentToMine, 1.0,
       Algorithms.AdjacentToPath, 1.0,
-      Algorithms.ConnectedDecisionAlgorithm, 1.0);
+      Algorithms.ConnectedDecisionAlgorithm, 1.0,
+      Algorithms.MineToMine, 1.0);
 
 
   public GameLogic() {
@@ -55,7 +58,7 @@ public class GameLogic {
     state.setClaimedGraph(triple.right);
     state.setGraph(triple.middle);
     state.setMines(triple.left);
-    state.setShortestPaths(RiverWeightingAlgorithm.apply(triple.middle, triple.left));
+    state.setShortestPaths(new FloydWarshallShortestPaths<>(triple.middle));
 
     this.currentState = state;
 
@@ -220,7 +223,7 @@ public class GameLogic {
     final List<Move> moves = previousMoves.getMoves();
     moves.stream()
          .filter(m -> m.getClaim() != null)
-         .map(m -> m.getClaim())
+         .map(Move::getClaim)
          .forEach(claim -> {
            if (state.getPunter() != claim.getPunter()) {
              final Site sourceVertex = new Site(claim.getSource());

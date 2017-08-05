@@ -47,6 +47,5 @@ public class GraphTests {
   @Test
   public void calculate_distance_to_mines() throws IOException {
     final Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> tuple = getSampleGame();
-    RiverWeightingAlgorithm.apply(tuple.right, tuple.left);
   }
 }
