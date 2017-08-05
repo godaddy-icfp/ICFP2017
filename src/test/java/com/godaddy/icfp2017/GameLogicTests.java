@@ -55,8 +55,8 @@ public class GameLogicTests {
     @Test
     public void run_game_and_one_move_test_weights() throws IOException {
         GameLogic impl = new GameLogic();
-        impl.setup(loadSetup());
-        final GameplayP2S move = impl.move(loadMoves());
+        final SetupP2S setup = impl.setup(loadSetup());
+        final GameplayP2S move = impl.move(loadMoves(setup));
         SimpleWeightedGraph<Site, River> graph = move.getState().getMap();
 
         // tested values

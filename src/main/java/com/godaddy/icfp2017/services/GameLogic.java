@@ -45,16 +45,16 @@ public class GameLogic {
     return response;
   }
 
-  private void computeWeightOnGraph(ImmutableMap<Algorithms, Double> algorithmValues)
+  private void computeWeightOnGraph(State state, ImmutableMap<Algorithms, Double> algorithmValues)
   {
 
-    this.state.getMap().edgeSet().forEach(river -> {
+    state.getMap().edgeSet().forEach(river -> {
       Double weight = river.getAlgorithmWeights().entrySet().stream()
               .map(e -> {
                 return e.getValue() * algorithmValues.get(e.getKey());
               })
               .reduce(1.0, (x, y) -> x * y);
-      this.state.getMap().setEdgeWeight(river, weight);
+      state.getMap().setEdgeWeight(river, weight);
     });
   }
 
@@ -119,7 +119,7 @@ public class GameLogic {
     );
 
     // Compute all the weight
-    this.computeWeightOnGraph(algorithmValues);
+    this.computeWeightOnGraph(currentState, algorithmValues);
 
     // initialize the response
     final GameplayP2S response = new GameplayP2S();
