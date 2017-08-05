@@ -12,7 +12,7 @@ public class River {
   private int target;
 
   @JsonProperty("algorithmWeights")
-  private HashMap<String, Double> algorithmWeights;
+  private HashMap<String, Double> algorithmWeights = new HashMap<String, Double>();
 
   public int getSource() {
     return source;

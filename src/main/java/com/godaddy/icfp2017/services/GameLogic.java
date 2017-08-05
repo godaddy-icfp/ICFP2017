@@ -70,6 +70,9 @@ public class GameLogic {
     Pass pass = new Pass();
     pass.setPunter(state.getPunter());
 
+    AdjacentToMinesAlgorithm a1 = new AdjacentToMinesAlgorithm(this.state.getMap());
+    a1.run();
+
     // todo initialize a reasonable claim
     //    Claim claim = new Claim();
     //    claim.setPunter(state.getPunter());
