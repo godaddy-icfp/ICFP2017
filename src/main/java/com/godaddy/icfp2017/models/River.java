@@ -17,6 +17,9 @@ public class River {
   @JsonProperty("algorithmWeights")
   private HashMap<Algorithms, Double> algorithmWeights = new HashMap<>();
 
+  @JsonProperty("claimedBy")
+  private int claimedBy;
+
   public int getSource() {
     return source;
   }
@@ -39,5 +42,13 @@ public class River {
 
   public void setAlgorithmWeights(final HashMap<Algorithms, Double> algorithmWeights) {
     this.algorithmWeights = algorithmWeights;
+  }
+
+  public int getClaimedBy() {
+    return claimedBy;
+  }
+
+  public void setClaimedBy(int claimedBy) {
+    this.claimedBy = claimedBy;
   }
 }
