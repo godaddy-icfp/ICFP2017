@@ -11,6 +11,8 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class GraphTests {
   @Test
   public void build_simple_graph() throws IOException {
@@ -19,8 +21,9 @@ public class GraphTests {
 
     final SetupS2P setupS2P = new ObjectMapper().readValue(resourceAsStream, SetupS2P.class);
 
-    final SimpleWeightedGraph<Site, River> siteRiverSimpleWeightedGraph = GameLogicImpl.buildGraph(setupS2P);
+    final SimpleWeightedGraph<Site, River> graph = GameLogicImpl.buildGraph(setupS2P);
 
+    assertThat(graph).isNotNull();
   }
 
   @Test
