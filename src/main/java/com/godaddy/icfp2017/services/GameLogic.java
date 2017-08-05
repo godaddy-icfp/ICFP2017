@@ -1,6 +1,7 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
+import com.godaddy.icfp2017.services.algotrithms.MinimumSpanningTreeAlgorithm;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -28,7 +29,8 @@ public class GameLogic {
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
           Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
-          Algorithms.MineToMine, MineToMineAlgorithm::new);
+          Algorithms.MineToMine, MineToMineAlgorithm::new,
+          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new);
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
@@ -36,7 +38,8 @@ public class GameLogic {
       Algorithms.AdjacentToMine, 1.0,
       Algorithms.AdjacentToPath, 1.0,
       Algorithms.ConnectedDecisionAlgorithm, 1.0,
-      Algorithms.MineToMine, 1.0);
+      Algorithms.MineToMine, 1.0,
+      Algorithms.MinimumSpanningTree, 1.0);
 
 
   public GameLogic() {
@@ -54,7 +57,9 @@ public class GameLogic {
     response.setReady(setup.getPunter());
     response.setState(state);
 
-    final Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>> triple = buildGraphs(setup);
+    final Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>> triple =
+        buildGraphs(
+            setup);
     state.setClaimedGraph(triple.right);
     state.setGraph(triple.middle);
     state.setMines(triple.left);
@@ -83,7 +88,7 @@ public class GameLogic {
     return bestRiver;
   }
 
-  public static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>>  buildGraph(final SetupS2P setup) {
+  public static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
@@ -112,20 +117,23 @@ public class GameLogic {
         builder.build());
   }
 
-  public static Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>> buildGraphs(final SetupS2P setup) {
+  public static Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>>
+  buildGraphs(
+      final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
     final ImmutableSet<Integer> mines = ImmutableSet.copyOf(map.getMines());
     final ImmutableMap<Integer, Site> siteById = sites
-            .stream()
-            .collect(toImmutableMap(Site::getId, Function.identity()));
+        .stream()
+        .collect(toImmutableMap(Site::getId, Function.identity()));
 
     final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builder =
-            SimpleWeightedGraph.builder(new LambdaEdgeFactory());
+        SimpleWeightedGraph.builder(new LambdaEdgeFactory());
 
-    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> myClaimedBuilder =
-            SimpleWeightedGraph.builder(new LambdaEdgeFactory());
+    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?>
+        myClaimedBuilder =
+        SimpleWeightedGraph.builder(new LambdaEdgeFactory());
 
     for (final Site site : sites) {
       site.setMine(mines.contains(site.getId()));
@@ -135,36 +143,30 @@ public class GameLogic {
 
     for (final River river : rivers) {
       builder.addEdge(
-              siteById.get(river.getSource()),
-              siteById.get(river.getTarget()),
-              river);
+          siteById.get(river.getSource()),
+          siteById.get(river.getTarget()),
+          river);
 
       if (river.getClaimedBy() == setup.getPunter()) {
         myClaimedBuilder.addEdge(
-                siteById.get(river.getSource()),
-                siteById.get(river.getTarget()),
-                river);
+            siteById.get(river.getSource()),
+            siteById.get(river.getTarget()),
+            river);
       }
     }
 
     return Triple.of(
-            mines.stream().map(siteById::get).collect(toImmutableSet()),
-            builder.build(),
-            myClaimedBuilder.build());
+        mines.stream().map(siteById::get).collect(toImmutableSet()),
+        builder.build(),
+        myClaimedBuilder.build());
   }
 
   public GameplayP2S move(final GameplayS2P move) {
     // load previous state
-    final State previousState = Optional.ofNullable(move.getPreviousState()).orElse(this.currentState);
 
-    final State currentState;
-
-    if (previousState != null) {
-      currentState = previousState;
-    }
-    else {
-      currentState = new State();
-    }
+    final State currentState = Optional.ofNullable(move.getPreviousState())
+                                       .orElseGet(() -> Optional.ofNullable(this.currentState)
+                                                                .orElseGet(State::new));
 
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
 

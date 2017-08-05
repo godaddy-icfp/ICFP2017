@@ -5,4 +5,5 @@ public enum Algorithms {
   AdjacentToPath,
   ConnectedDecisionAlgorithm,
   MineToMine,
+  MinimumSpanningTree
 }
