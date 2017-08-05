@@ -9,6 +9,7 @@ import com.godaddy.icfp2017.models.P2S;
 import com.godaddy.icfp2017.models.S2P;
 import com.godaddy.icfp2017.models.SetupP2S;
 import com.godaddy.icfp2017.models.SetupS2P;
+import com.google.common.io.ByteStreams;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class GameDriver {
 
   private final InputStream inputStream;
-  private final PrintStream offlineOutputStream;
+  private final PrintStream outputStream;
   private final PrintStream debugStream;
 
   private final GameLogic gameLogic;
@@ -29,25 +30,12 @@ public class GameDriver {
 
   public GameDriver(
       final InputStream inputStream,
-      final OutputStream offlineOutputStream,
+      final OutputStream outputStream,
       final OutputStream debugStream,
       final GameLogic gameLogic) {
     this.inputStream = inputStream;
-
-    if (offlineOutputStream != null) {
-      this.offlineOutputStream = new PrintStream(offlineOutputStream);
-    }
-    else {
-      this.offlineOutputStream = null;
-    }
-
-    if (debugStream != null) {
-      this.debugStream = new PrintStream(debugStream);
-    }
-    else {
-      this.debugStream = null;
-    }
-
+    this.outputStream = new PrintStream(outputStream);
+    this.debugStream = new PrintStream(Optional.ofNullable(debugStream).orElseGet(ByteStreams::nullOutputStream));
     this.gameLogic = gameLogic;
 
     inboundMessageParser = new InboundMessageParser();
@@ -101,14 +89,9 @@ public class GameDriver {
 
     String json = JsonMapper.Instance.writeValueAsString(p2s);
     final String output = json.length() + 1 + ":" + json + '\n';
-
-    if (offlineOutputStream != null) {
-      offlineOutputStream.print(output);
-    }
-
-    if (debugStream != null) {
-      debugStream.println("out => " + output);
-    }
+    outputStream.print(output);
+    outputStream.flush();
+    debugStream.println("out => " + output);
   }
 
   private Optional<S2P> getMessage() throws Exception {
@@ -119,9 +102,7 @@ public class GameDriver {
 
     final String messageString = readString(messageLength);
 
-    if (debugStream != null) {
-      debugStream.println("in => " + messageLength + ":" + messageString);
-    }
+    debugStream.println("in => " + messageLength + ":" + messageString);
 
     if (messageString.length() > 0) {
       return inboundMessageParser.getNextMessage(messageString);

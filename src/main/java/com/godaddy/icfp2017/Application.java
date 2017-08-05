@@ -50,7 +50,7 @@ class Application {
       final Integer port = (Integer) options.valueOf("port");
       Socket skt = new Socket(host, port);
       gameDriver = new GameDriver(new BufferedInputStream(skt.getInputStream()),
-                                  null,
+                                  skt.getOutputStream(),
                                   System.out,
                                   gameLogic);
     }
