@@ -93,7 +93,9 @@ public class GameLogicImpl implements GameLogic {
          .forEach(claim -> {
            if (state.getPunter() != claim.getPunter()) {
              final River edge = map.getEdge(new Site(claim.getSource()), new Site(claim.getTarget()));
-             map.setEdgeWeight(edge, 0);
+             if (edge != null) {
+               map.setEdgeWeight(edge, 0);
+             }
            }
          });
   }
