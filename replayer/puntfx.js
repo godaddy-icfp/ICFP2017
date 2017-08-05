@@ -35,6 +35,9 @@ const colours =
         "#9edae5"];
 
 function getPunterColour(punter) {
+    if(punterID == punter) {
+        return "#bada55"
+    }
     return colours[punter % colours.length];
 }
 
