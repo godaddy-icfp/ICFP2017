@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.godaddy.icfp2017.services.Algorithms;
 import com.google.common.base.Objects;
+import org.jgrapht.graph.DefaultWeightedEdge;
 
 import java.util.HashMap;
 
-public class River {
+public class River extends DefaultWeightedEdge {
   @JsonProperty("source")
   private int source;
 
@@ -29,7 +30,7 @@ public class River {
     this.target = target;
   }
 
-  public int getSource() {
+  public Integer getSource() {
     return source;
   }
 
@@ -37,7 +38,7 @@ public class River {
     this.source = source;
   }
 
-  public int getTarget() {
+  public Integer getTarget() {
     return target;
   }
 

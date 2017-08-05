@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
+import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +43,19 @@ public class GameLogic {
     state.setMap(graph);
 
     return response;
+  }
+
+  private void computeWeightOnGraph(ImmutableMap<Algorithms, Double> algorithmValues)
+  {
+
+    this.state.getMap().edgeSet().forEach(river -> {
+      Double weight = river.getAlgorithmWeights().entrySet().stream()
+              .map(e -> {
+                return e.getValue() * algorithmValues.get(e.getKey());
+              })
+              .reduce(1.0, (x, y) -> x * y);
+      this.state.getMap().setEdgeWeight(river, weight);
+    });
   }
 
   public static SimpleWeightedGraph<Site, River> buildGraph(final SetupS2P setup) {
@@ -95,13 +110,22 @@ public class GameLogic {
     //    claim.setPunter(state.getPunter());
     //    claim.setTarget(0);
     //    claim.setSource(0);
-    //    response.setClaim(claim);
+    //    response.setClaim(claim)
+
+    // These are constants that value algorithms over all rivers
+    // It allows us to select which algorithms are valuable (and which are not) for this particular move
+    ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
+            Algorithms.Adjacent, 1.0
+    );
+
+    // Compute all the weight
+    this.computeWeightOnGraph(algorithmValues);
 
     // initialize the response
     final GameplayP2S response = new GameplayP2S();
     response.setPass(pass); // todo change this to setClaim
     response.setState(currentState);
-
+    currentState.setMoveCount(currentState.getMoveCount() + 1);
     return response;
   }
 

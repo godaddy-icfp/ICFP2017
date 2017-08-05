@@ -14,17 +14,13 @@ public class AdjacentToMinesAlgorithm implements GraphAlgorithm {
 
   @Override
   public void run() {
-    this.graph.vertexSet()
-              .forEach(site -> {
-                this.graph.edgesOf(site)
-                          .forEach(river -> {
-                            if (site.isMine()) {
-                              river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Max);
-                            }
-                            else {
-                              river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Identity);
-                            }
-                          });
+      this.graph.edgeSet()
+              .forEach(river -> {
+                  if (graph.getEdgeSource(river).isMine() || graph.getEdgeTarget(river).isMine()) {
+                      river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Max);
+                  } else {
+                      river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Identity);
+                  }
               });
   }
 }
