@@ -23,3 +23,6 @@ cat sampleSetupInput.json | java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar
 java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar -mode=online -host=punter.inf.ed.ac.uk -port=9004 
 ```
 
+## Overview notes
+
+![Notes](Notes.png)
