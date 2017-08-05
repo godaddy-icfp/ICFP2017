@@ -1,7 +1,6 @@
 package com.godaddy.icfp2017.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.icfp2017.models.GameplayP2S;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.HandShakeP2S;
@@ -25,10 +24,13 @@ public class GameDriver {
   private final GameLogic gameLogic;
 
   private final InboundMessageParser inboundMessageParser;
-  private final ObjectMapper mapper = new ObjectMapper();
 
 
-  public GameDriver(final InputStream inputStream, final OutputStream outputStream, final OutputStream debugStream, final GameLogic gameLogic)
+  public GameDriver(
+      final InputStream inputStream,
+      final OutputStream outputStream,
+      final OutputStream debugStream,
+      final GameLogic gameLogic)
       throws Exception {
     this.inputStream = inputStream;
 
@@ -58,7 +60,7 @@ public class GameDriver {
     // get the handshake from the server
     final HandshakeS2P handshakeS2P = (HandshakeS2P) getMessage();
 
-    while(true) {
+    while (true) {
       // read the next message from the server
       final S2P s2p = getMessage();
 
@@ -84,7 +86,7 @@ public class GameDriver {
 
   public void sendMessage(P2S p2s) throws JsonProcessingException {
 
-    String json = mapper.writeValueAsString(p2s);
+    String json = JsonMapper.Instance.writeValueAsString(p2s);
     final String output = json.length() + 1 + ":" + json + '\n';
     outputStream.print(output);
     if (debugStream != null) {
@@ -94,13 +96,14 @@ public class GameDriver {
 
   public S2P getMessage() throws Exception {
     final int messageLength = readInteger();
-    if (messageLength == 0)
+    if (messageLength == 0) {
       return null;
+    }
 
     final String messageString = readString(messageLength);
 
     if (debugStream != null) {
-      debugStream.println("in => " + messageLength + ":" +  messageString);
+      debugStream.println("in => " + messageLength + ":" + messageString);
     }
 
     if (messageString != null && messageString.length() > 0) {
@@ -134,7 +137,7 @@ public class GameDriver {
     final byte[] buffer = new byte[1024];
     int totalLengthRead = 0;
     StringBuilder sb = new StringBuilder();
-    while(totalLengthRead < length) {
+    while (totalLengthRead < length) {
       int charsToRead = Math.min(buffer.length, length - totalLengthRead);
       final int bytesRead = inputStream.read(buffer, 0, charsToRead);
       totalLengthRead += bytesRead;

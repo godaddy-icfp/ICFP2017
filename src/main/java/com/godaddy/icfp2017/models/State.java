@@ -10,7 +10,7 @@ public class State {
   private int punter;
 
   @JsonProperty
-  private SimpleWeightedGraph<Site, River> map;
+  private SimpleWeightedGraph<Site, River> graph;
 
   @JsonProperty
   private int moveCount;
@@ -28,16 +28,17 @@ public class State {
     this.punter = punter;
   }
 
-  public SimpleWeightedGraph<Site, River> getMap() {
-    return map;
+  public SimpleWeightedGraph<Site, River> getGraph() {
+    return graph;
   }
 
-  public void setMap(final SimpleWeightedGraph<Site, River> map) {
-    System.err.println(map.toString());
-    this.map = map;
+  public void setGraph(final SimpleWeightedGraph<Site, River> graph) {
+    this.graph = graph;
   }
 
-  public int getMoveCount() { return moveCount; }
+  public int getMoveCount() {
+    return moveCount;
+  }
 
   public void setMoveCount(final int moveCount) {
     this.moveCount = moveCount;
@@ -51,7 +52,7 @@ public class State {
     return mines;
   }
 
-  public void setShortestPaths(final FloydWarshallShortestPaths<Site,River> shortestPaths) {
+  public void setShortestPaths(final FloydWarshallShortestPaths<Site, River> shortestPaths) {
     this.shortestPaths = shortestPaths;
   }
 

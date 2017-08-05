@@ -7,9 +7,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
-import java.util.HashMap;
+import java.io.Serializable;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class River extends DefaultWeightedEdge {
+public class River extends DefaultWeightedEdge implements Serializable {
   @JsonProperty("source")
   private int source;
 
@@ -17,8 +18,7 @@ public class River extends DefaultWeightedEdge {
   private int target;
 
   @JsonIgnore
-  @JsonProperty("algorithmWeights")
-  private HashMap<Algorithms, Double> algorithmWeights = new HashMap<>();
+  private final transient ConcurrentHashMap<Algorithms, Double> algorithmWeights = new ConcurrentHashMap<>();
 
   @JsonProperty("claimedBy")
   private int claimedBy = -1;
@@ -47,12 +47,8 @@ public class River extends DefaultWeightedEdge {
     this.target = target;
   }
 
-  public HashMap<Algorithms, Double> getAlgorithmWeights() {
+  public ConcurrentHashMap<Algorithms, Double> getAlgorithmWeights() {
     return algorithmWeights;
-  }
-
-  public void setAlgorithmWeights(final HashMap<Algorithms, Double> algorithmWeights) {
-    this.algorithmWeights = algorithmWeights;
   }
 
   public int getClaimedBy() {
@@ -82,8 +78,8 @@ public class River extends DefaultWeightedEdge {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("source", source)
-        .add("target", target)
-        .toString();
+                      .add("source", source)
+                      .add("target", target)
+                      .toString();
   }
 }

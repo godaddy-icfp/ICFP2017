@@ -7,6 +7,7 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,6 +19,8 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 public class GameLogic {
   private final ExecutorService executorService;
+
+  private State currentState;
 
   private ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
@@ -39,28 +42,26 @@ public class GameLogic {
     response.setState(state);
 
     final Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> tuple = buildGraph(setup);
-    state.setMap(tuple.right);
+    state.setGraph(tuple.right);
     state.setMines(tuple.left);
     state.setShortestPaths(RiverWeightingAlgorithm.apply(tuple.right, tuple.left));
+
+    this.currentState = state;
 
     return response;
   }
 
-  private River computeWeightOnGraph(State state, ImmutableMap<Algorithms, Double> algorithmValues)
-  {
-      // Pick any river
+  private River computeWeightOnGraph(State state, ImmutableMap<Algorithms, Double> algorithmValues) {
+    // Pick any river
     River bestRiver = null;
     Double bestWeight = 0.0;
 
-    for (River river : state.getMap().edgeSet()) {
+    for (River river : state.getGraph().edgeSet()) {
       Double weight = river.getAlgorithmWeights().entrySet().stream()
-              .map(e -> {
-                return e.getValue() * algorithmValues.get(e.getKey());
-              })
-              .reduce(1.0, (x, y) -> x * y);
-      state.getMap().setEdgeWeight(river, weight);
-      if (!river.isClaimed() && (weight > bestWeight))
-      {
+                           .map(e -> e.getValue() * algorithmValues.get(e.getKey()))
+                           .reduce(1.0, (x, y) -> x * y);
+      state.getGraph().setEdgeWeight(river, weight);
+      if (!river.isClaimed() && (weight > bestWeight)) {
         bestWeight = weight;
         bestRiver = river;
       }
@@ -99,9 +100,18 @@ public class GameLogic {
 
   public GameplayP2S move(final GameplayS2P move) {
     // load previous state
-    final State currentState = move.getPreviousState();
+    final State previousState = Optional.ofNullable(move.getPreviousState()).orElse(this.currentState);
 
-    zeroClaimedEdges(move.getPreviousMoves(), currentState.getMap(), currentState);
+    final State currentState;
+
+    if (previousState != null) {
+      currentState = previousState;
+    }
+    else {
+      currentState = new State();
+    }
+
+    zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
 
     Pass pass = new Pass();
     pass.setPunter(currentState.getPunter());
@@ -123,10 +133,11 @@ public class GameLogic {
     // It allows us to select which algorithms are valuable (and which are not) for this particular move
     ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
         Algorithms.AdjacentToMine, 1.0
-    );
+                                                                      );
 
     // Compute all the weight
     River bestRiver = this.computeWeightOnGraph(currentState, algorithmValues);
+
 
     Claim claim = new Claim();
     claim.setPunter(currentState.getPunter());

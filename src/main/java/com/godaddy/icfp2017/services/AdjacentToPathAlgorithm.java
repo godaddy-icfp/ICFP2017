@@ -10,7 +10,7 @@ public class AdjacentToPathAlgorithm implements GraphAlgorithm {
   private final State state;
 
   public AdjacentToPathAlgorithm(final State state) {
-    this.graph = state.getMap();
+    this.graph = state.getGraph();
     this.state = state;
   }
 

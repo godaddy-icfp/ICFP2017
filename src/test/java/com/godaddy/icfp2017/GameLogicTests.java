@@ -37,7 +37,7 @@ public class GameLogicTests {
     GameLogic impl = new GameLogic();
     final SetupP2S setup = impl.setup(loadSetup());
     final GameplayP2S move = impl.move(loadMoves(setup));
-    SimpleWeightedGraph<Site, River> graph = move.getState().getMap();
+    SimpleWeightedGraph<Site, River> graph = move.getState().getGraph();
 
     graph.vertexSet()
          .forEach(site -> {
@@ -58,7 +58,7 @@ public class GameLogicTests {
         GameLogic impl = new GameLogic();
         final SetupP2S setup = impl.setup(loadSetup());
         final GameplayP2S move = impl.move(loadMoves(setup));
-        SimpleWeightedGraph<Site, River> graph = move.getState().getMap();
+        SimpleWeightedGraph<Site, River> graph = move.getState().getGraph();
 
         // tested values
         ImmutableList<Double> expectedValues = ImmutableList.of(1.0, 10.0, 1.0, 10.0, 10.0, 10.0, 10.0, 1.0, 10.0, 10.0, 1.0, 10.0);

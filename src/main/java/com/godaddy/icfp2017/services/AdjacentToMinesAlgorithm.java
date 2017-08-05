@@ -9,7 +9,7 @@ public class AdjacentToMinesAlgorithm implements GraphAlgorithm {
   private SimpleWeightedGraph<Site, River> graph;
 
   public AdjacentToMinesAlgorithm(final State state) {
-    this.graph = state.getMap();
+    this.graph = state.getGraph();
   }
 
   @Override

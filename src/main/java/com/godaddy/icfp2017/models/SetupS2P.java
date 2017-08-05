@@ -1,6 +1,7 @@
 package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class SetupS2P implements S2P {
   @JsonProperty("punter")
@@ -11,6 +12,17 @@ public class SetupS2P implements S2P {
 
   @JsonProperty("map")
   private Map map;
+
+  public JsonNode getSettings() {
+    return settings;
+  }
+
+  public void setSettings(final JsonNode settings) {
+    this.settings = settings;
+  }
+
+  @JsonProperty("settings")
+  private JsonNode settings;
 
   public int getPunter() {
     return punter;
