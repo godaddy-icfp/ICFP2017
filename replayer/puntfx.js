@@ -189,6 +189,7 @@ function processMessage(message) {
             printFinalScores(msg.stop.scores);
         } else if(msg.claim !== undefined) {
             logInfo("made our move of: " + JSON.stringify(msg.claim));
+            handleIncomingMove(msg);
         } else {
             logError("unknown JSON message: " + message.data);
         }

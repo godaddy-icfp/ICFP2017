@@ -108,18 +108,16 @@ public class GameDriver implements AutoCloseable {
 
   public void dumpCapture(final PrintStream output) {
 
-    output.println("------- INPUT CAPTURE (FOR REPLAY) -------");
+    output.println("------- CAPTURE (FOR REPLAY) -------");
     output.println();
 
     for (final ICFPMessage icfpMessage : capture) {
-      if (icfpMessage instanceof ServerToPlayer) {
-        try {
-          output.println(
-              JsonMapper.Instance.writeValueAsString(icfpMessage));
-        }
-        catch (JsonProcessingException e) {
-          e.printStackTrace();
-        }
+      try {
+        output.println(
+            JsonMapper.Instance.writeValueAsString(icfpMessage));
+      }
+      catch (JsonProcessingException e) {
+        e.printStackTrace();
       }
     }
 
