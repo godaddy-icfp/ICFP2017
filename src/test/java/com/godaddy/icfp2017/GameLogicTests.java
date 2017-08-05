@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.icfp2017.models.GameplayP2S;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.SetupS2P;
-import com.godaddy.icfp2017.services.GameLogicImpl;
+import com.godaddy.icfp2017.services.GameLogic;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 public class GameLogicTests {
   @Test
   public void run_game_and_one_move() throws IOException {
-    GameLogicImpl impl = new GameLogicImpl();
+    GameLogic impl = new GameLogic();
     impl.setup(loadSetup());
     final GameplayP2S move = impl.move(loadMoves());
 

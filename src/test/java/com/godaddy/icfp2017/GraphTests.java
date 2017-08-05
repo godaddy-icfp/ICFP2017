@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.SetupS2P;
 import com.godaddy.icfp2017.models.Site;
-import com.godaddy.icfp2017.services.GameLogicImpl;
+import com.godaddy.icfp2017.services.GameLogic;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
 
@@ -21,7 +21,7 @@ public class GraphTests {
 
     final SetupS2P setupS2P = new ObjectMapper().readValue(resourceAsStream, SetupS2P.class);
 
-    final SimpleWeightedGraph<Site, River> graph = GameLogicImpl.buildGraph(setupS2P);
+    final SimpleWeightedGraph<Site, River> graph = GameLogic.buildGraph(setupS2P);
 
     assertThat(graph).isNotNull();
   }
@@ -33,7 +33,7 @@ public class GraphTests {
 
     final SetupS2P setupS2P = new ObjectMapper().readValue(resourceAsStream, SetupS2P.class);
 
-    final SimpleWeightedGraph<Site, River> siteRiverSimpleWeightedGraph = GameLogicImpl.buildGraph(setupS2P);
+    final SimpleWeightedGraph<Site, River> siteRiverSimpleWeightedGraph = GameLogic.buildGraph(setupS2P);
 
   }
 }

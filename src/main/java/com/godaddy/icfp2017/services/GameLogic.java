@@ -11,10 +11,9 @@ import java.util.function.Function;
 
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
-public class GameLogicImpl implements GameLogic {
+public class GameLogic {
   private State state;
 
-  @Override
   public SetupP2S setup(final SetupS2P setup) {
     state = new State();
 
@@ -59,7 +58,6 @@ public class GameLogicImpl implements GameLogic {
     return builder.build();
   }
 
-  @Override
   public GameplayP2S move(final GameplayS2P move) {
     // load previous state
     final State previousState = move.getPreviousState();
