@@ -26,6 +26,13 @@ public class GameLogicImpl implements GameLogic {
     response.setReady(setup.getPunter());
     response.setState(state);
 
+    final SimpleWeightedGraph<Site, River> graph = buildGraph(setup);
+    state.setMap(graph);
+
+    return response;
+  }
+
+  public static SimpleWeightedGraph<Site, River> buildGraph(final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
@@ -49,9 +56,7 @@ public class GameLogicImpl implements GameLogic {
           river);
     }
 
-    state.setMap(builder.build());
-
-    return response;
+    return builder.build();
   }
 
   @Override
