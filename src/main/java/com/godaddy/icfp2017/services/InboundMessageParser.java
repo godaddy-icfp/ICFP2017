@@ -35,6 +35,6 @@ public class InboundMessageParser {
       }
     }
 
-    return Optional.of(s2p);
+    return Optional.ofNullable(s2p);
   }
 }
