@@ -2,7 +2,7 @@ package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class HandshakeS2P implements S2P {
+public class HandshakeS2P implements ServerToPlayer {
   @JsonProperty("you")
   private String you;
 
