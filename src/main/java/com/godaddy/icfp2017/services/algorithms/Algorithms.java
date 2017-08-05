@@ -1,4 +1,4 @@
-package com.godaddy.icfp2017.services;
+package com.godaddy.icfp2017.services.algorithms;
 
 public enum Algorithms {
   AdjacentToMine,

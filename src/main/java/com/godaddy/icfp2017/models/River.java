@@ -2,7 +2,7 @@ package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.godaddy.icfp2017.services.Algorithms;
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import org.jgrapht.graph.DefaultWeightedEdge;

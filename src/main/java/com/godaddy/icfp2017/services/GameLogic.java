@@ -1,7 +1,14 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
-import com.godaddy.icfp2017.services.algotrithms.MinimumSpanningTreeAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.AdjacentToMinesAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.AdjacentToPathAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.AlgorithmFactory;
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.godaddy.icfp2017.services.algorithms.ConnectedDecisionAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.MineToMineAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.MinimumSpanningTreeAlgorithm;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -88,7 +95,7 @@ public class GameLogic {
     return bestRiver;
   }
 
-  public static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(final SetupS2P setup) {
+  static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();

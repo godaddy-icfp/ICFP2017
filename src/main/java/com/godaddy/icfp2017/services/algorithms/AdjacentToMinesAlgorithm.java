@@ -1,11 +1,13 @@
-package com.godaddy.icfp2017.services;
+package com.godaddy.icfp2017.services.algorithms;
 
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
+import com.godaddy.icfp2017.services.Weights;
+import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
-final class AdjacentToMinesAlgorithm implements GraphAlgorithm {
+final public class AdjacentToMinesAlgorithm implements GraphAlgorithm {
   private final Setter setter;
 
   public AdjacentToMinesAlgorithm(

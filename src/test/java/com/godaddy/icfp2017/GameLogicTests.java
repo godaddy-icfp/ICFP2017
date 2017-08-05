@@ -7,7 +7,7 @@ import com.godaddy.icfp2017.models.SetupP2S;
 import com.godaddy.icfp2017.models.SetupS2P;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
-import com.godaddy.icfp2017.services.Algorithms;
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.GraphTests;
 import com.godaddy.icfp2017.services.JsonMapper;

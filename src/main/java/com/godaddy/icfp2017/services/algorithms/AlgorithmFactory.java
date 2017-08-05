@@ -1,4 +1,6 @@
-package com.godaddy.icfp2017.services;
+package com.godaddy.icfp2017.services.algorithms;
+
+import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 
 @FunctionalInterface
 public interface AlgorithmFactory {

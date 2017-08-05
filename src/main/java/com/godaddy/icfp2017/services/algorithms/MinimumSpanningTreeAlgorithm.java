@@ -1,9 +1,8 @@
-package com.godaddy.icfp2017.services.algotrithms;
+package com.godaddy.icfp2017.services.algorithms;
 
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
-import com.godaddy.icfp2017.services.GraphAlgorithm;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 
 public class MinimumSpanningTreeAlgorithm implements GraphAlgorithm {
