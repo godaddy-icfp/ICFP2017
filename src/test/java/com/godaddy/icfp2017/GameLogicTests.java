@@ -41,17 +41,15 @@ public class GameLogicTests {
     SimpleWeightedGraph<Site, River> graph = move.getState().getGraph();
 
     graph.vertexSet()
-         .forEach(site -> {
-           graph.edgesOf(site)
-                .forEach(river -> {
-                  if (site.isMine()) {
-                    assertThat(river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Max);
-                  }
-                  else {
-                    assertThat(river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Identity);
-                  }
-                });
-         });
+         .forEach(site -> graph.edgesOf(site)
+              .forEach(river -> {
+                if (site.isMine()) {
+                  assertThat(river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Max);
+                }
+                else {
+                  assertThat(river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Identity);
+                }
+              }));
   }
 
   @Test
@@ -92,8 +90,7 @@ public class GameLogicTests {
     final ClassLoader classLoader = GraphTests.class.getClassLoader();
     final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleGame.json");
 
-    final SetupS2P setupS2P = JsonMapper.Instance.readValue(resourceAsStream, SetupS2P.class);
-    return setupS2P;
+    return JsonMapper.Instance.readValue(resourceAsStream, SetupS2P.class);
   }
 
   private GameplayS2P loadMoves(final SetupP2S setup) throws IOException {
