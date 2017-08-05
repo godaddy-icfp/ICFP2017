@@ -17,10 +17,10 @@ public class AdjacentToMinesAlgorithm {
                 this.graph.edgesOf(site)
                           .forEach(river -> {
                             if (site.isMine()) {
-                              river.getAlgorithmWeights().put(Algorithms.Adjacent, 10.0);
+                              river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Max);
                             }
                             else {
-                              river.getAlgorithmWeights().put(Algorithms.Adjacent, 1.0);
+                              river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Identity);
                             }
                           });
               });
