@@ -1,5 +1,6 @@
 package com.godaddy.icfp2017.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.godaddy.icfp2017.services.Algorithms;
 
@@ -12,8 +13,9 @@ public class River {
   @JsonProperty("target")
   private int target;
 
+  @JsonIgnore
   @JsonProperty("algorithmWeights")
-  private HashMap<Algorithms, Double> algorithmWeights = new HashMap<Algorithms, Double>();
+  private HashMap<Algorithms, Double> algorithmWeights = new HashMap<>();
 
   public int getSource() {
     return source;
