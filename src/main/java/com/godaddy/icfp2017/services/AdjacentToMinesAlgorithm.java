@@ -17,9 +17,9 @@ public class AdjacentToMinesAlgorithm implements GraphAlgorithm {
       this.graph.edgeSet()
               .forEach(river -> {
                   if (graph.getEdgeSource(river).isMine() || graph.getEdgeTarget(river).isMine()) {
-                      river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Max);
+                      river.getAlgorithmWeights().put(Algorithms.AdjacentToMine, Weights.Max);
                   } else {
-                      river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Identity);
+                      river.getAlgorithmWeights().put(Algorithms.AdjacentToMine, Weights.Identity);
                   }
               });
   }

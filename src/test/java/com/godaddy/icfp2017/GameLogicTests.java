@@ -43,10 +43,10 @@ public class GameLogicTests {
            graph.edgesOf(site)
                 .forEach(river -> {
                   if (site.isMine()) {
-                    assertThat(river.getAlgorithmWeights().get(Algorithms.Adjacent) == Weights.Max);
+                    assertThat(river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Max);
                   }
                   else {
-                    assertThat(river.getAlgorithmWeights().get(Algorithms.Adjacent) == Weights.Identity);
+                    assertThat(river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Identity);
                   }
                 });
          });

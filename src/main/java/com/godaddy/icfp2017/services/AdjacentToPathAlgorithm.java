@@ -21,23 +21,24 @@ public class AdjacentToPathAlgorithm implements GraphAlgorithm {
                 boolean targetConnected = false;
 
                 Site source = graph.getEdgeSource(river);
-                for(River sourceRiver: graph.edgesOf(source)) {
+                for (River sourceRiver : graph.edgesOf(source)) {
                   if (sourceRiver.getClaimedBy() == this.state.getPunter()) {
                     sourceConnected = true;
                   }
                 }
 
                 Site target = graph.getEdgeTarget(river);
-                for(River targetRiver: graph.edgesOf(target)) {
+                for (River targetRiver : graph.edgesOf(target)) {
                   if (targetRiver.getClaimedBy() == this.state.getPunter()) {
                     targetConnected = true;
                   }
                 }
 
                 if (sourceConnected && targetConnected) {
-                  river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Decent);
-                } else if (sourceConnected || targetConnected) {
-                  river.getAlgorithmWeights().put(Algorithms.Adjacent, Weights.Desired);
+                  river.getAlgorithmWeights().put(Algorithms.AdjacentToPath, Weights.Decent);
+                }
+                else if (sourceConnected || targetConnected) {
+                  river.getAlgorithmWeights().put(Algorithms.AdjacentToPath, Weights.Desired);
                 }
               });
   }

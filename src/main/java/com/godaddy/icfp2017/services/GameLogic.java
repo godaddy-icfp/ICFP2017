@@ -6,8 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -22,7 +20,7 @@ public class GameLogic {
 
   private ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
-          Algorithms.Adjacent, AdjacentToMinesAlgorithm::new);
+          Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new);
 
   public GameLogic() {
     executorService = Executors.newFixedThreadPool(Algorithms.values().length);
@@ -119,7 +117,7 @@ public class GameLogic {
     // These are constants that value algorithms over all rivers
     // It allows us to select which algorithms are valuable (and which are not) for this particular move
     ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
-            Algorithms.Adjacent, 1.0
+        Algorithms.AdjacentToMine, 1.0
     );
 
     // Compute all the weight
