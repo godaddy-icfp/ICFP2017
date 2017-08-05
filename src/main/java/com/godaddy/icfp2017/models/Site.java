@@ -12,7 +12,11 @@ public class Site implements Serializable {
   private int id;
   private boolean isMine;
 
-  public Site() {}
+  private double x;
+  private double y;
+
+  public Site() {
+  }
 
   public Site(int id) {
     this.id = id;
@@ -47,5 +51,21 @@ public class Site implements Serializable {
 
   public void setMine(final boolean mine) {
     isMine = mine;
+  }
+
+  public double getY() {
+    return y;
+  }
+
+  public void setY(final double y) {
+    this.y = y;
+  }
+
+  public double getX() {
+    return x;
+  }
+
+  public void setX(final double x) {
+    this.x = x;
   }
 }

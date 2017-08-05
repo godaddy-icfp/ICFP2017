@@ -1,5 +1,6 @@
 package com.godaddy.icfp2017.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -13,6 +14,7 @@ public class SetupS2P implements ServerToPlayer {
   @JsonProperty("map")
   private Map map;
 
+  @JsonIgnore // this might be for futures??
   public JsonNode getSettings() {
     return settings;
   }
