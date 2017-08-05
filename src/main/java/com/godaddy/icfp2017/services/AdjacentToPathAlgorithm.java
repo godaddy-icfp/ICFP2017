@@ -36,10 +36,7 @@ public class AdjacentToPathAlgorithm implements GraphAlgorithm {
                   }
                 }
 
-                if (sourceConnected && targetConnected) {
-                  setter.apply(river, Weights.Decent);
-                }
-                else if (sourceConnected || targetConnected) {
+                if (sourceConnected ^ targetConnected) {
                   setter.apply(river, Weights.Desired);
                 }
               });
