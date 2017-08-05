@@ -19,7 +19,8 @@ public class GameLogic {
   private State state;
 
   private final ExecutorService executorService;
-  private ImmutableMap<Algorithms, Function<SimpleWeightedGraph<Site, River>, GraphAlgorithm>> algorithmCreators =
+
+  private ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
           Algorithms.Adjacent, AdjacentToMinesAlgorithm::new);
 
@@ -111,7 +112,7 @@ public class GameLogic {
 
   private void runAllAlgorithms(final CountDownLatch completeLatch) {
     algorithmCreators.forEach((algo, creator) -> {
-      final GraphAlgorithm graphAlgorithm = creator.apply(this.state.getMap());
+      final GraphAlgorithm graphAlgorithm = creator.create(this.state);
       executorService.submit(() -> {
         graphAlgorithm.run();
         completeLatch.countDown();
