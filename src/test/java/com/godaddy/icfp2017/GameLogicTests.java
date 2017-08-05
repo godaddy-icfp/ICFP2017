@@ -1,7 +1,12 @@
 package com.godaddy.icfp2017;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.godaddy.icfp2017.models.*;
+import com.godaddy.icfp2017.models.GameplayP2S;
+import com.godaddy.icfp2017.models.GameplayS2P;
+import com.godaddy.icfp2017.models.River;
+import com.godaddy.icfp2017.models.SetupP2S;
+import com.godaddy.icfp2017.models.SetupS2P;
+import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.services.Algorithms;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.Weights;
@@ -17,8 +22,10 @@ public class GameLogicTests {
   @Test
   public void run_game_and_one_move() throws IOException {
     GameLogic impl = new GameLogic();
-    impl.setup(loadSetup());
-    final GameplayP2S move = impl.move(loadMoves());
+    final SetupP2S setup = impl.setup(loadSetup());
+    final GameplayS2P previousMoves = loadMoves(setup);
+
+    final GameplayP2S move = impl.move(previousMoves);
 
     assertThat(move).isNotNull();
   }
@@ -26,22 +33,22 @@ public class GameLogicTests {
   @Test
   public void run_game_and_one_move_with_adjacent_mines() throws IOException {
     GameLogic impl = new GameLogic();
-    impl.setup(loadSetup());
-    final GameplayP2S move = impl.move(loadMoves());
+    final SetupP2S setup = impl.setup(loadSetup());
+    final GameplayP2S move = impl.move(loadMoves(setup));
     SimpleWeightedGraph<Site, River> graph = move.getState().getMap();
 
     graph.vertexSet()
-            .forEach(site -> {
-              graph.edgesOf(site)
-                      .forEach(river -> {
-                        if (site.isMine()) {
-                            assertThat(river.getAlgorithmWeights().get(Algorithms.Adjacent) == Weights.Max);
-                        }
-                        else {
-                            assertThat(river.getAlgorithmWeights().get(Algorithms.Adjacent) == Weights.Identity);
-                        }
-                      });
-            });
+         .forEach(site -> {
+           graph.edgesOf(site)
+                .forEach(river -> {
+                  if (site.isMine()) {
+                    assertThat(river.getAlgorithmWeights().get(Algorithms.Adjacent) == Weights.Max);
+                  }
+                  else {
+                    assertThat(river.getAlgorithmWeights().get(Algorithms.Adjacent) == Weights.Identity);
+                  }
+                });
+         });
   }
 
   private SetupS2P loadSetup() throws IOException {
@@ -53,12 +60,15 @@ public class GameLogicTests {
     return setupS2P;
   }
 
-  private GameplayS2P loadMoves() throws IOException {
+  private GameplayS2P loadMoves(final SetupP2S setup) throws IOException {
 
     final ClassLoader classLoader = GraphTests.class.getClassLoader();
     final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleMoves.json");
 
-    final GameplayS2P setupS2P = new ObjectMapper().readValue(resourceAsStream, GameplayS2P.class);
-    return setupS2P;
+    final GameplayS2P moves = new ObjectMapper().readValue(resourceAsStream, GameplayS2P.class);
+
+    moves.setPreviousState(setup.getState());
+
+    return moves;
   }
 }
