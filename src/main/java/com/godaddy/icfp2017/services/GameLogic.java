@@ -27,6 +27,7 @@ import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 public class GameLogic {
+
   private final ExecutorService executorService;
 
   private State currentState;
@@ -56,7 +57,6 @@ public class GameLogic {
   public SetupP2S setup(final SetupS2P setup) {
     final State state = new State();
 
-    // todo set some more initial state
     state.setPunter(setup.getPunter());
 
     // respond
@@ -77,15 +77,16 @@ public class GameLogic {
     return response;
   }
 
-  private River computeWeightOnGraph(State state, ImmutableMap<Algorithms, Double> algorithmValues) {
+  private River computeWeightOnGraph(State state,
+      ImmutableMap<Algorithms, Double> algorithmValues) {
     // Pick any river
     River bestRiver = null;
     Double bestWeight = 0.0;
 
     for (River river : state.getGraph().edgeSet()) {
       Double weight = river.getAlgorithmWeights().entrySet().stream()
-                           .map(e -> e.getValue() * algorithmValues.get(e.getKey()))
-                           .reduce(1.0, (x, y) -> x * y);
+          .map(e -> e.getValue() * algorithmValues.get(e.getKey()))
+          .reduce(1.0, (x, y) -> x * y);
       state.getGraph().setEdgeWeight(river, weight);
       if (!river.isClaimed() && (weight > bestWeight)) {
         bestWeight = weight;
@@ -95,7 +96,8 @@ public class GameLogic {
     return bestRiver;
   }
 
-  static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(final SetupS2P setup) {
+  static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(
+      final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
@@ -168,12 +170,13 @@ public class GameLogic {
         myClaimedBuilder.build());
   }
 
-  public GameplayP2S move(final GameplayS2P move) {
+  public GameplayP2S move(final GameplayS2P move,
+      Algorithms algorithm) {
     // load previous state
 
     final State currentState = Optional.ofNullable(move.getPreviousState())
-                                       .orElseGet(() -> Optional.ofNullable(this.currentState)
-                                                                .orElseGet(State::new));
+        .orElseGet(() -> Optional.ofNullable(this.currentState)
+            .orElseGet(State::new));
 
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
 
@@ -182,20 +185,19 @@ public class GameLogic {
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
-    runAllAlgorithms(completeLatch, currentState);
-
+    if (null != algorithm) {
+      runSpecificAlgorithm(completeLatch, currentState, algorithm);
+    } else {
+      runAllAlgorithms(completeLatch, currentState);
+    }
     try {
       completeLatch.await(500, TimeUnit.MILLISECONDS);
-    }
-    catch (InterruptedException e) {
+    } catch (InterruptedException e) {
       // ignore so we respond
     }
 
-    // todo initialize a reasonable claim
-
     // Compute all the weight
     River bestRiver = this.computeWeightOnGraph(currentState, algorithmValues);
-
 
     Claim claim = new Claim();
     claim.setPunter(currentState.getPunter());
@@ -212,17 +214,25 @@ public class GameLogic {
     return response;
   }
 
-  private void runAllAlgorithms(final CountDownLatch completeLatch, final State state) {
-    algorithmCreators.forEach((algo, creator) -> {
-      final GraphAlgorithm graphAlgorithm = creator.create(
-          river -> river.getAlgorithmWeights().get(algo),
-          (river, score) -> river.getAlgorithmWeights().put(algo, score));
-      executorService.submit(() -> {
+  public GraphAlgorithm getGraphAlgorithm(Algorithms algorithm) {
+    return algorithmCreators.get(algorithm).create(
+          river -> river.getAlgorithmWeights().get(algorithm),
+          (river, score) -> river.getAlgorithmWeights().put(algorithm, score));
+  }
 
-        graphAlgorithm.run(algo, state);
-        completeLatch.countDown();
-      });
+  private void runSpecificAlgorithm(final CountDownLatch completeLatch, final State state,
+      Algorithms algorithm) {
+    final GraphAlgorithm graphAlgorithm = getGraphAlgorithm(algorithm);
+    executorService.submit(() -> {
+      graphAlgorithm.run(algorithm, state);
+      completeLatch.countDown();
     });
+  }
+
+  private void runAllAlgorithms(final CountDownLatch completeLatch, final State state) {
+    for (Algorithms algorithm: algorithmCreators.keySet()) {
+      runSpecificAlgorithm(completeLatch, state, algorithm);
+    }
   }
 
   private void zeroClaimedEdges(
@@ -232,25 +242,25 @@ public class GameLogic {
 
     final List<Move> moves = previousMoves.getMoves();
     moves.stream()
-         .filter(m -> m.getClaim() != null)
-         .map(Move::getClaim)
-         .forEach(claim -> {
-           if (state.getPunter() != claim.getPunter()) {
-             final Site sourceVertex = new Site(claim.getSource());
-             final Site targetVertex = new Site(claim.getTarget());
+        .filter(m -> m.getClaim() != null)
+        .map(Move::getClaim)
+        .forEach(claim -> {
+          if (state.getPunter() != claim.getPunter()) {
+            final Site sourceVertex = new Site(claim.getSource());
+            final Site targetVertex = new Site(claim.getTarget());
 
-             final River edgeSource = map.getEdge(sourceVertex, targetVertex);
+            final River edgeSource = map.getEdge(sourceVertex, targetVertex);
 
-             final River edge = Optional.ofNullable(edgeSource)
-                                        .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
+            final River edge = Optional.ofNullable(edgeSource)
+                .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
 
-             if (edge == null) {
-               return;
-             }
+            if (edge == null) {
+              return;
+            }
 
-             edge.setClaimedBy(claim.getPunter());
-             map.setEdgeWeight(edge, Weights.Max * 1000);
-           }
-         });
+            edge.setClaimedBy(claim.getPunter());
+            map.setEdgeWeight(edge, Weights.Max * 1000);
+          }
+        });
   }
 }

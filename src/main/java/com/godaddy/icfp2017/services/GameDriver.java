@@ -79,7 +79,7 @@ public class GameDriver {
       // gameplay
       else if (s2p instanceof GameplayS2P) {
         final GameplayS2P gameplayS2P = (GameplayS2P) s2p;
-        final GameplayP2S gameplayP2S = gameLogic.move(gameplayS2P);
+        final GameplayP2S gameplayP2S = gameLogic.move(gameplayS2P, null);
         sendMessage(gameplayP2S);
       }
     }

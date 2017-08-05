@@ -15,6 +15,7 @@ import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.GraphTests;
 import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.Weights;
+import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 import com.google.common.collect.ImmutableList;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
@@ -30,55 +31,32 @@ public class GameLogicTests {
     final SetupP2S setup = impl.setup(loadSetup());
     final GameplayS2P previousMoves = loadMoves(setup);
 
-    final GameplayP2S move = impl.move(previousMoves);
+    final GameplayP2S move = impl.move(previousMoves, null);
 
     assertNotNull(move);
   }
 
-  // TODO tng - This test fails
-  // @Test
+  @Test
   public void run_game_and_one_move_with_adjacent_mines() throws IOException {
     GameLogic impl = new GameLogic();
     final SetupP2S setup = impl.setup(loadSetup());
-    final GameplayP2S move = impl.move(loadMoves(setup));
+    State state = setup.getState();
+    final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(Algorithms.AdjacentToMine);
+    graphAlgorithm.run(Algorithms.AdjacentToMine, state);
 
-    validateTimes(move);
+    validateTimes(state);
 
-    SimpleWeightedGraph<Site, River> graph = move.getState().getGraph();
+    SimpleWeightedGraph<Site, River> graph = state.getGraph();
 
     graph.vertexSet()
         .forEach(site -> graph.edgesOf(site)
             .forEach(river -> {
+              Double weight = river.getAlgorithmWeights().get(Algorithms.AdjacentToMine);
               if (site.isMine()) {
                 assertTrue(
-                    river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Max);
-              } else {
-                assertTrue(
-                    river.getAlgorithmWeights().get(Algorithms.AdjacentToMine) == Weights.Identity);
+                     weight == Weights.Max);
               }
             }));
-  }
-
-  // TODO tng - This test fails
-  // @Test
-  public void run_game_and_one_move_test_weights() throws IOException {
-    GameLogic impl = new GameLogic();
-    final SetupP2S setup = impl.setup(loadSetup());
-    final GameplayP2S move = impl.move(loadMoves(setup));
-
-    validateTimes(move);
-
-    SimpleWeightedGraph<Site, River> graph = move.getState().getGraph();
-
-    // tested values
-    ImmutableList<Double> expectedValues =
-        ImmutableList.of(1.0, 10.0, 1.0, 10.0, 10.0, 10.0, 10.0, 1.0, 10.0, 10.0, 1.0, 10.0);
-
-    int i = 0;
-    for (River river : graph.edgeSet()) {
-      assertTrue(graph.getEdgeWeight(river) == expectedValues.indexOf(i));
-      i += 1;
-    }
   }
 
   private SetupS2P loadBigSetup() throws IOException {
@@ -92,14 +70,14 @@ public class GameLogicTests {
   public void run_large_graph_test() throws IOException {
     GameLogic impl = new GameLogic();
     final SetupP2S setup = impl.setup(loadBigSetup());
-    final GameplayP2S move = impl.move(loadMoves(setup));
+    final GameplayP2S move = impl.move(loadMoves(setup), null);
 
-    validateTimes(move);
+    validateTimes(move.getState());
   }
 
-  private void validateTimes(GameplayP2S move) {
+  private void validateTimes(State state) {
     for (Algorithms algorithm : Algorithms.values()) {
-      Long timeToRun = move.getState().getLastTime(algorithm);
+      Long timeToRun = state.getLastTime(algorithm);
       if (null != timeToRun) {
         assertTrue(timeToRun < 200);
         System.out.println(algorithm + " took " + timeToRun + "ms");

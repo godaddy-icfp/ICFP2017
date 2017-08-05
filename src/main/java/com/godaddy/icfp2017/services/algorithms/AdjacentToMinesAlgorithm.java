@@ -18,14 +18,7 @@ final public class AdjacentToMinesAlgorithm extends BaseAlgorithm {
   @Override
   public void iterate(final State state) {
     final SimpleWeightedGraph<Site, River> graph = state.getGraph();
-    graph.edgeSet()
-        .forEach(river -> {
-          if (graph.getEdgeSource(river).isMine() || graph.getEdgeTarget(river).isMine()) {
-            setter.apply(river, Weights.Max);
-          }
-          else {
-            setter.apply(river, Weights.Identity);
-          }
-        });
+    state.getMines().forEach(mine -> graph.edgesOf(mine)
+        .forEach(river -> setter.apply(river, Weights.Max)));
   }
 }
