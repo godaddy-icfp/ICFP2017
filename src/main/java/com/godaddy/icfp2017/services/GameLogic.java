@@ -16,8 +16,6 @@ import java.util.function.Function;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public class GameLogic {
-  private State state;
-
   private final ExecutorService executorService;
 
   private ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
@@ -29,7 +27,7 @@ public class GameLogic {
   }
 
   public SetupP2S setup(final SetupS2P setup) {
-    state = new State();
+    final State state = new State();
 
     // todo set some more initial state
     state.setPunter(setup.getPunter());
@@ -74,19 +72,16 @@ public class GameLogic {
 
   public GameplayP2S move(final GameplayS2P move) {
     // load previous state
-    final State previousState = move.getPreviousState();
-    if (previousState != null) {
-      this.state = previousState;
-    }
+    final State currentState = move.getPreviousState();
 
-    zeroClaimedEdges(move.getPreviousMoves(), state.getMap());
+    zeroClaimedEdges(move.getPreviousMoves(), currentState.getMap(), currentState);
 
     Pass pass = new Pass();
-    pass.setPunter(state.getPunter());
+    pass.setPunter(currentState.getPunter());
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
-    runAllAlgorithms(completeLatch);
+    runAllAlgorithms(completeLatch, currentState);
 
     try {
       completeLatch.await(900, TimeUnit.MILLISECONDS);
@@ -105,14 +100,14 @@ public class GameLogic {
     // initialize the response
     final GameplayP2S response = new GameplayP2S();
     response.setPass(pass); // todo change this to setClaim
-    response.setState(state);
+    response.setState(currentState);
 
     return response;
   }
 
-  private void runAllAlgorithms(final CountDownLatch completeLatch) {
+  private void runAllAlgorithms(final CountDownLatch completeLatch, final State state) {
     algorithmCreators.forEach((algo, creator) -> {
-      final GraphAlgorithm graphAlgorithm = creator.create(this.state);
+      final GraphAlgorithm graphAlgorithm = creator.create(state);
       executorService.submit(() -> {
         graphAlgorithm.run();
         completeLatch.countDown();
@@ -122,8 +117,8 @@ public class GameLogic {
 
   private void zeroClaimedEdges(
       final PreviousMoves previousMoves,
-      final SimpleWeightedGraph<Site, River> map) {
-
+      final SimpleWeightedGraph<Site, River> map,
+      final State state) {
 
     final List<Move> moves = previousMoves.getMoves();
     moves.stream()
