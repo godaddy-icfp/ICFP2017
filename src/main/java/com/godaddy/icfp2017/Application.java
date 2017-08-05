@@ -43,7 +43,7 @@ public class Application {
     GameDriver gameDriver = null;
 
     if (options.valueOf("mode").equals("offline")) {
-      gameDriver = new GameDriver(System.in, System.out, null, gameLogic);
+      gameDriver = new GameDriver(System.in, System.out, System.err, gameLogic);
     }
 
     if (options.valueOf("mode").equals("online")) {

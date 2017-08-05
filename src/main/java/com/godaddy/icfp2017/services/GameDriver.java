@@ -140,6 +140,7 @@ public class GameDriver {
       totalLengthRead += bytesRead;
       sb.append(new String(buffer, 0, bytesRead));
     }
+    System.err.println(sb.toString());
     return sb.toString();
   }
 }
