@@ -250,7 +250,7 @@ public class GameLogic {
              edge.setClaimedBy(claim.getPunter());
 
              if (edge != null) {
-               map.setEdgeWeight(edge, Weights.Zero);
+               map.setEdgeWeight(edge, Weights.Max * 1000);
              }
            }
          });
