@@ -10,6 +10,7 @@ import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.services.Algorithms;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.Weights;
+import com.google.common.collect.ImmutableList;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
 
@@ -50,6 +51,23 @@ public class GameLogicTests {
                 });
          });
   }
+
+    @Test
+    public void run_game_and_one_move_test_weights() throws IOException {
+        GameLogic impl = new GameLogic();
+        final SetupP2S setup = impl.setup(loadSetup());
+        final GameplayP2S move = impl.move(loadMoves(setup));
+        SimpleWeightedGraph<Site, River> graph = move.getState().getMap();
+
+        // tested values
+        ImmutableList<Double> expectedValues = ImmutableList.of(1.0, 10.0, 1.0, 10.0, 10.0, 10.0, 10.0, 1.0, 10.0, 10.0, 1.0, 10.0);
+
+        int i = 0;
+        for (River river : graph.edgeSet()) {
+            assertThat(graph.getEdgeWeight(river) == expectedValues.indexOf(i));
+            i += 1;
+        }
+    }
 
   private SetupS2P loadSetup() throws IOException {
 

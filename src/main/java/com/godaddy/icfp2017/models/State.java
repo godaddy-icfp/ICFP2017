@@ -10,6 +10,9 @@ public class State {
   @JsonProperty
   private SimpleWeightedGraph<Site, River> map;
 
+  @JsonProperty
+  private int moveCount;
+
   public int getPunter() {
     return punter;
   }
@@ -25,5 +28,11 @@ public class State {
   public void setMap(final SimpleWeightedGraph<Site, River> map) {
     System.err.println(map.toString());
     this.map = map;
+  }
+
+  public int getMoveCount() { return moveCount; }
+
+  public void setMoveCount(final int moveCount) {
+    this.moveCount = moveCount;
   }
 }
