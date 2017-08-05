@@ -1,6 +1,5 @@
 package com.godaddy.icfp2017.services;
 
-import com.godaddy.icfp2017.models.Claim;
 import com.godaddy.icfp2017.models.GameplayP2S;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.Pass;
@@ -15,6 +14,10 @@ public class GameLogicImpl implements GameLogic {
   public SetupP2S setup(final SetupS2P setup) {
     state = new State();
 
+    // todo set some more initial state
+    state.setPunter(setup.getPunter());
+
+    // respond
     SetupP2S response = new SetupP2S();
     response.setReady(setup.getPunter());
     response.setState(state);
@@ -23,19 +26,25 @@ public class GameLogicImpl implements GameLogic {
 
   @Override
   public GameplayP2S move(final GameplayS2P move) {
-    final GameplayP2S response = new GameplayP2S();
+    // load previous state
+    final State previousState = move.getPreviousState();
+    if (previousState != null) {
+      this.state = previousState;
+    }
 
     Pass pass = new Pass();
     pass.setPunter(state.getPunter());
-    response.setPass(pass);
 
-    // todo
-//    Claim claim = new Claim();
-//    claim.setPunter(state.getPunter());
-//    claim.setTarget(0);
-//    claim.setSource(0);
-//    response.setClaim(claim);
+    // todo initialize a reasonable claim
+    //    Claim claim = new Claim();
+    //    claim.setPunter(state.getPunter());
+    //    claim.setTarget(0);
+    //    claim.setSource(0);
+    //    response.setClaim(claim);
 
+    // initialize the response
+    final GameplayP2S response = new GameplayP2S();
+    response.setPass(pass); // todo change this to setClaim
     response.setState(state);
     return response;
   }
