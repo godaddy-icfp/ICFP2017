@@ -1,6 +1,5 @@
 package com.godaddy.icfp2017;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.godaddy.icfp2017.models.GameplayP2S;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.River;
@@ -10,6 +9,7 @@ import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.services.Algorithms;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.GraphTests;
+import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.Weights;
 import com.google.common.collect.ImmutableList;
 import org.jgrapht.graph.SimpleWeightedGraph;
@@ -75,7 +75,7 @@ public class GameLogicTests {
     final ClassLoader classLoader = GraphTests.class.getClassLoader();
     final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleGame.json");
 
-    final SetupS2P setupS2P = new ObjectMapper().readValue(resourceAsStream, SetupS2P.class);
+    final SetupS2P setupS2P = JsonMapper.Instance.readValue(resourceAsStream, SetupS2P.class);
     return setupS2P;
   }
 
@@ -84,7 +84,7 @@ public class GameLogicTests {
     final ClassLoader classLoader = GraphTests.class.getClassLoader();
     final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleMoves.json");
 
-    final GameplayS2P moves = new ObjectMapper().readValue(resourceAsStream, GameplayS2P.class);
+    final GameplayS2P moves = JsonMapper.Instance.readValue(resourceAsStream, GameplayS2P.class);
 
     moves.setPreviousState(setup.getState());
 

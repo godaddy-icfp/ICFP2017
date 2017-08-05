@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-class JsonMapper extends ObjectMapper {
+public class JsonMapper extends ObjectMapper {
   public static final JsonMapper Instance = new JsonMapper();
 
   public JsonMapper() {
