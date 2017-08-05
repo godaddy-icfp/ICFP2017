@@ -8,7 +8,7 @@ import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 
-final public class ConnectedDecisionAlgorithm implements GraphAlgorithm {
+final public class ConnectedDecisionAlgorithm extends BaseAlgorithm {
     private final Setter setter;
 
     public ConnectedDecisionAlgorithm(
@@ -18,7 +18,7 @@ final public class ConnectedDecisionAlgorithm implements GraphAlgorithm {
     }
 
     @Override
-    public void run(final State state) {
+    public void iterate(final State state) {
         final SimpleWeightedGraph<Site, River> graph = state.getGraph();
         graph.edgeSet()
                 .forEach(river -> {

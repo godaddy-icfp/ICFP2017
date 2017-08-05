@@ -7,7 +7,7 @@ import com.godaddy.icfp2017.services.Weights;
 import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
-final public class AdjacentToMinesAlgorithm implements GraphAlgorithm {
+final public class AdjacentToMinesAlgorithm extends BaseAlgorithm {
   private final Setter setter;
 
   public AdjacentToMinesAlgorithm(
@@ -17,7 +17,7 @@ final public class AdjacentToMinesAlgorithm implements GraphAlgorithm {
   }
 
   @Override
-  public void run(final State state) {
+  public void iterate(final State state) {
     final SimpleWeightedGraph<Site, River> graph = state.getGraph();
     graph.edgeSet()
         .forEach(river -> {

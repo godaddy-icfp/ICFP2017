@@ -6,7 +6,7 @@ import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 
-final public class MineToMineAlgorithm implements GraphAlgorithm {
+final public class MineToMineAlgorithm extends BaseAlgorithm {
   private final Getter getter;
   private final Setter setter;
 
@@ -18,7 +18,7 @@ final public class MineToMineAlgorithm implements GraphAlgorithm {
   }
 
   @Override
-  public void run(final State state) {
+  public void iterate(final State state) {
     final FloydWarshallShortestPaths<Site, River> shortestPaths = state.getShortestPaths();
 
     for (final Site source : state.getMines()) {

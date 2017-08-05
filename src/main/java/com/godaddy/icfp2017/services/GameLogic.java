@@ -185,7 +185,7 @@ public class GameLogic {
     runAllAlgorithms(completeLatch, currentState);
 
     try {
-      completeLatch.await(900, TimeUnit.MILLISECONDS);
+      completeLatch.await(500, TimeUnit.MILLISECONDS);
     }
     catch (InterruptedException e) {
       // ignore so we respond
@@ -218,6 +218,7 @@ public class GameLogic {
           river -> river.getAlgorithmWeights().get(algo),
           (river, score) -> river.getAlgorithmWeights().put(algo, score));
       executorService.submit(() -> {
+
         graphAlgorithm.run(state);
         completeLatch.countDown();
       });

@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.godaddy.icfp2017.models.serialization.BinaryStateDeserializer;
 import com.godaddy.icfp2017.models.serialization.BinaryStateSerializer;
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
@@ -20,6 +22,21 @@ public class State {
 
   @JsonProperty
   private SimpleWeightedGraph<Site, River> claimedGraph;
+
+  public Integer getLastTime(Algorithms algorithm) {
+    return lastTime.get(algorithm);
+  }
+
+  public State() {
+    lastTime = new HashMap<>();
+  }
+
+  public void setLastTime(Algorithms algorithm, Integer lastTime) {
+    this.lastTime.put(algorithm, lastTime);
+  }
+
+  @JsonProperty
+  private HashMap<Algorithms, Integer> lastTime;
 
   @JsonProperty
   private int moveCount;

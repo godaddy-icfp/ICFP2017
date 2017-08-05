@@ -5,7 +5,7 @@ import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
 import org.jgrapht.alg.spanning.BoruvkaMinimumSpanningTree;
 
-public class MinimumSpanningTreeAlgorithm implements GraphAlgorithm {
+public class MinimumSpanningTreeAlgorithm extends BaseAlgorithm {
 
   private final Getter getter;
   private final Setter setter;
@@ -18,7 +18,7 @@ public class MinimumSpanningTreeAlgorithm implements GraphAlgorithm {
   }
 
   @Override
-  public void run(final State state) {
+  public void iterate(final State state) {
     final BoruvkaMinimumSpanningTree<Site, River> minimumSpanningTree =
         new BoruvkaMinimumSpanningTree<>(state.getGraph());
 
