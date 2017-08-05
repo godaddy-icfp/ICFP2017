@@ -14,11 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Optional;
 
 public class GameDriver {
 
   private final InputStream inputStream;
-  private final PrintStream outputStream;
   private final PrintStream debugStream;
 
   private final GameLogic gameLogic;
@@ -28,13 +28,10 @@ public class GameDriver {
 
   public GameDriver(
       final InputStream inputStream,
-      final OutputStream outputStream,
       final OutputStream debugStream,
       final GameLogic gameLogic)
       throws Exception {
     this.inputStream = inputStream;
-
-    this.outputStream = new PrintStream(outputStream);
 
     if (debugStream != null) {
       this.debugStream = new PrintStream(debugStream);
@@ -58,11 +55,23 @@ public class GameDriver {
     sendMessage(handShakeP2S);
 
     // get the handshake from the server
-    final HandshakeS2P handshakeS2P = (HandshakeS2P) getMessage();
+    final Optional<S2P> message = getMessage();
+
+    if (!message.isPresent()) {
+      return;
+    }
+
+    final HandshakeS2P handshakeS2P = (HandshakeS2P) message.get();
 
     while (true) {
       // read the next message from the server
-      final S2P s2p = getMessage();
+      final Optional<S2P> s2pOptional = getMessage();
+
+      if (!s2pOptional.isPresent()) {
+        return;
+      }
+
+      final S2P s2p = s2pOptional.get();
 
       // setup
       if (s2p instanceof SetupS2P) {
@@ -87,17 +96,16 @@ public class GameDriver {
   public void sendMessage(P2S p2s) throws JsonProcessingException {
 
     String json = JsonMapper.Instance.writeValueAsString(p2s);
-    final String output = json.length() + 1 + ":" + json + '\n';
-    outputStream.print(output);
     if (debugStream != null) {
+      final String output = json.length() + 1 + ":" + json + '\n';
       debugStream.println("out => " + output);
     }
   }
 
-  public S2P getMessage() throws Exception {
+  public Optional<S2P> getMessage() throws Exception {
     final int messageLength = readInteger();
     if (messageLength == 0) {
-      return null;
+      return Optional.empty();
     }
 
     final String messageString = readString(messageLength);
@@ -106,12 +114,11 @@ public class GameDriver {
       debugStream.println("in => " + messageLength + ":" + messageString);
     }
 
-    if (messageString != null && messageString.length() > 0) {
-      final S2P nextMessage = inboundMessageParser.getNextMessage(messageString);
-      return nextMessage;
+    if (messageString.length() > 0) {
+      return inboundMessageParser.getNextMessage(messageString);
     }
     else {
-      return null;
+      return Optional.empty();
     }
   }
 

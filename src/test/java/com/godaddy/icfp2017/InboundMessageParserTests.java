@@ -16,7 +16,8 @@ public class InboundMessageParserTests {
   @Test
   public void canDeserializeHandshakeS2P() throws Exception {
     InboundMessageParser parser = new InboundMessageParser();
-    final S2P s2p = parser.getNextMessage(Resources.toString(Resources.getResource("HandshakeS2P.json"), Charsets.UTF_8));
+    final S2P s2p = parser.getNextMessage(Resources.toString(Resources.getResource("HandshakeS2P.json"),
+                                                             Charsets.UTF_8)).get();
 
     assertThat(s2p).isInstanceOf(HandshakeS2P.class);
     HandshakeS2P handshakeS2P = (HandshakeS2P) s2p;
@@ -27,10 +28,11 @@ public class InboundMessageParserTests {
   @Test
   public void canDeserializeSetup() throws Exception {
     InboundMessageParser parser = new InboundMessageParser();
-    final S2P s2p = parser.getNextMessage(Resources.toString(Resources.getResource("SetupS2P.json"), Charsets.UTF_8));
+    final S2P s2p = parser.getNextMessage(Resources.toString(Resources.getResource("SetupS2P.json"), Charsets.UTF_8))
+                          .get();
 
     assertThat(s2p).isInstanceOf(SetupS2P.class);
-    SetupS2P setupS2P = (SetupS2P)s2p;
+    SetupS2P setupS2P = (SetupS2P) s2p;
 
     assertThat(setupS2P.getPunter()).isEqualTo(0);
   }
@@ -38,10 +40,11 @@ public class InboundMessageParserTests {
   @Test
   public void canDeserializeGameplay() throws Exception {
     InboundMessageParser parser = new InboundMessageParser();
-    final S2P s2p = parser.getNextMessage(Resources.toString(Resources.getResource("GameplayS2P.json"), Charsets.UTF_8));
+    final S2P s2p = parser.getNextMessage(Resources.toString(Resources.getResource("GameplayS2P.json"),
+                                                             Charsets.UTF_8)).get();
 
     assertThat(s2p).isInstanceOf(GameplayS2P.class);
-    GameplayS2P gameplayS2P = (GameplayS2P)s2p;
+    GameplayS2P gameplayS2P = (GameplayS2P) s2p;
 
     assertThat(gameplayS2P.getPreviousMoves().getMoves().size()).isEqualTo(0);
   }

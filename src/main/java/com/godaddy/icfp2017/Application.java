@@ -16,7 +16,7 @@ public class Application {
     parser.accepts("mode")
           .withRequiredArg().ofType(String.class)
           .defaultsTo("offline")
-    .describedAs("offline or online");
+          .describedAs("offline or online");
 
     parser.accepts("host")
           .withOptionalArg().ofType(String.class)
@@ -42,14 +42,16 @@ public class Application {
     GameDriver gameDriver = null;
 
     if (options.valueOf("mode").equals("offline")) {
-      gameDriver = new GameDriver(System.in, System.out, System.err, gameLogic);
+      gameDriver = new GameDriver(System.in, System.err, gameLogic);
     }
 
     if (options.valueOf("mode").equals("online")) {
       final String host = (String) options.valueOf("host");
       final Integer port = (Integer) options.valueOf("port");
       Socket skt = new Socket(host, port);
-      gameDriver = new GameDriver(new BufferedInputStream(skt.getInputStream()), skt.getOutputStream(), System.out, gameLogic);
+      gameDriver = new GameDriver(new BufferedInputStream(skt.getInputStream()),
+                                  System.out,
+                                  gameLogic);
     }
 
     gameDriver.run();

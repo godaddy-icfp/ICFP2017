@@ -8,11 +8,13 @@ import com.godaddy.icfp2017.models.HandshakeS2P;
 import com.godaddy.icfp2017.models.S2P;
 import com.godaddy.icfp2017.models.SetupS2P;
 
+import java.util.Optional;
+
 public class InboundMessageParser {
 
   private final JsonFactory factory = JsonMapper.Instance.getFactory();
 
-  public S2P getNextMessage(String input) throws Exception {
+  public Optional<S2P> getNextMessage(String input) throws Exception {
     S2P s2p = null;
 
 
@@ -28,9 +30,11 @@ public class InboundMessageParser {
         case "move":
           s2p = parser.readValueAs(GameplayS2P.class);
           break;
+        case "stop":
+          return Optional.empty();
       }
     }
 
-    return s2p;
+    return Optional.of(s2p);
   }
 }
