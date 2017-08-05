@@ -45,32 +45,48 @@ class Application {
 
 
     GameDriver gameDriver = null;
+    Socket communicationSocket = null;
 
-    OutputStream debugStream = null;
+    try {
+      OutputStream debugStream = null;
 
-    if (options.has("debug")) {
-      debugStream = System.err;
+      if (options.has("debug")) {
+        debugStream = System.err;
+      }
+
+      final boolean shouldCapture = options.has("capture");
+
+      if (options.valueOf("mode").equals("offline")) {
+        gameDriver = new GameDriver(System.in, System.out, debugStream, gameLogic, shouldCapture);
+      }
+
+      if (options.valueOf("mode").equals("online")) {
+        final String host = (String) options.valueOf("host");
+        final Integer port = (Integer) options.valueOf("port");
+        communicationSocket = new Socket(host, port);
+        communicationSocket.setTcpNoDelay(true);
+        gameDriver = new GameDriver(new BufferedInputStream(communicationSocket.getInputStream()),
+                                    communicationSocket.getOutputStream(),
+                                    debugStream,
+                                    gameLogic, shouldCapture);
+      }
+
+      assert gameDriver != null;
+      gameDriver.run();
+
+      if(shouldCapture) {
+        gameDriver.dumpCapture(System.err);
+      }
+
     }
-
-    if (options.valueOf("mode").equals("offline")) {
-      gameDriver = new GameDriver(System.in, System.out, debugStream, gameLogic);
+    finally {
+      if (gameDriver != null) {
+        gameDriver.close();
+      }
+      if (communicationSocket != null) {
+        communicationSocket.close();
+      }
     }
-
-    if (options.valueOf("mode").equals("online")) {
-      final String host = (String) options.valueOf("host");
-      final Integer port = (Integer) options.valueOf("port");
-      Socket skt = new Socket(host, port);
-      gameDriver = new GameDriver(new BufferedInputStream(skt.getInputStream()),
-                                  skt.getOutputStream(),
-                                  debugStream,
-                                  gameLogic);
-    }
-
-    if (options.has("capture")) {
-    }
-
-    assert gameDriver != null;
-    gameDriver.run();
 
   }
 }

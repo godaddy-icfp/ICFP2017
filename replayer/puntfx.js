@@ -148,7 +148,7 @@ function logRelay(msg) {
 
 function replayLog() {
     turnNumber = 0;
-    var log = document.getElementById("log");
+    var log = document.getElementById("replayLog");
     var value = log.value;
     var split = value.split(/\n/g);
     split.forEach(function (message) {
@@ -187,6 +187,8 @@ function processMessage(message) {
         } else if (msg.stop !== undefined) {
             handleIncomingMoves(msg.stop.moves);
             printFinalScores(msg.stop.scores);
+        } else if(msg.claim !== undefined) {
+            logInfo("made our move of: " + JSON.stringify(msg.claim));
         } else {
             logError("unknown JSON message: " + message.data);
         }

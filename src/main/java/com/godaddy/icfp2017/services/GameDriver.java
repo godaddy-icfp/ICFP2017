@@ -20,7 +20,7 @@ import java.io.PrintStream;
 import java.util.Optional;
 import java.util.Queue;
 
-public class GameDriver {
+public class GameDriver implements AutoCloseable {
 
   private final InputStream inputStream;
   private final PrintStream outputStream;
@@ -32,15 +32,19 @@ public class GameDriver {
 
   private final Queue<ICFPMessage> capture = Queues.newConcurrentLinkedQueue();
 
+  private final boolean shouldCapture;
+
   public GameDriver(
       final InputStream inputStream,
       final OutputStream outputStream,
       final OutputStream debugStream,
-      final GameLogic gameLogic) {
+      final GameLogic gameLogic,
+      final boolean shouldCapture) {
     this.inputStream = inputStream;
     this.outputStream = new PrintStream(outputStream);
     this.debugStream = new PrintStream(Optional.ofNullable(debugStream).orElseGet(ByteStreams::nullOutputStream));
     this.gameLogic = gameLogic;
+    this.shouldCapture = shouldCapture;
 
     inboundMessageParser = new InboundMessageParser();
   }
@@ -71,14 +75,18 @@ public class GameDriver {
 
       final ServerToPlayer serverToPlayerMessage = s2pOptional.get();
 
-      capture.add(serverToPlayerMessage);
+      if (shouldCapture) {
+        capture.add(serverToPlayerMessage);
+      }
 
       // setup
       if (serverToPlayerMessage instanceof SetupS2P) {
         final SetupS2P setupS2P = (SetupS2P) serverToPlayerMessage;
         final SetupP2S setupResponse = gameLogic.setup(setupS2P);
         sendMessage(setupResponse);
-        capture.add(setupResponse);
+        if (shouldCapture) {
+          capture.add(setupResponse);
+        }
       }
 
       // gameplay
@@ -86,9 +94,35 @@ public class GameDriver {
         final GameplayS2P gameplayS2P = (GameplayS2P) serverToPlayerMessage;
         final GameplayP2S moveResponse = gameLogic.move(gameplayS2P, null);
         sendMessage(moveResponse);
-        capture.add(moveResponse);
+        if (shouldCapture) {
+          capture.add(moveResponse);
+        }
       }
     }
+  }
+
+  @Override
+  public void close() throws Exception {
+    gameLogic.close();
+  }
+
+  public void dumpCapture(final PrintStream output) {
+
+    output.println("------- INPUT CAPTURE (FOR REPLAY) -------");
+    output.println();
+
+    for (final ICFPMessage icfpMessage : capture) {
+      if (icfpMessage instanceof ServerToPlayer) {
+        try {
+          output.println(
+              JsonMapper.Instance.writeValueAsString(icfpMessage));
+        }
+        catch (JsonProcessingException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
   }
 
   private void sendMessage(PlayerToServer p2s) throws JsonProcessingException {
@@ -146,7 +180,6 @@ public class GameDriver {
       totalLengthRead += bytesRead;
       sb.append(new String(buffer, 0, bytesRead));
     }
-    System.err.println(sb.toString());
     return sb.toString();
   }
 }

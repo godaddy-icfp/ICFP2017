@@ -26,8 +26,7 @@ import java.util.function.Function;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
-public class GameLogic {
-
+public class GameLogic implements AutoCloseable {
   private final ExecutorService executorService;
 
   private State currentState;
@@ -77,8 +76,14 @@ public class GameLogic {
     return response;
   }
 
-  private River computeWeightOnGraph(State state,
-      ImmutableMap<Algorithms, Double> algorithmValues) {
+  @Override
+  public void close() throws Exception {
+    executorService.shutdown();
+  }
+
+  private River computeWeightOnGraph(
+      final State state,
+      final ImmutableMap<Algorithms, Double> algorithmValues) {
     // Pick any river
     River bestRiver = null;
     Double bestWeight = 0.0;
@@ -207,7 +212,7 @@ public class GameLogic {
 
     // initialize the response
     final GameplayP2S response = new GameplayP2S();
-    response.setPass(pass); // todo change this to setClaim
+//    response.setPass(pass); // todo change this to setClaim
     response.setState(currentState);
     response.setClaim(claim);
     currentState.setMoveCount(currentState.getMoveCount() + 1);

@@ -59,6 +59,7 @@ public class River extends DefaultWeightedEdge implements Serializable {
     this.claimedBy = claimedBy;
   }
 
+  @JsonIgnore
   public boolean isClaimed() {
     return this.claimedBy >= 0;
   }
