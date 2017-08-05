@@ -14,5 +14,5 @@ public interface GraphAlgorithm {
     void apply(River river, double score);
   }
 
-  void run(final State state);
+  void run(Algorithms algorithm, final State state);
 }

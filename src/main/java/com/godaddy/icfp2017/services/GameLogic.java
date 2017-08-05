@@ -219,7 +219,7 @@ public class GameLogic {
           (river, score) -> river.getAlgorithmWeights().put(algo, score));
       executorService.submit(() -> {
 
-        graphAlgorithm.run(state);
+        graphAlgorithm.run(algo, state);
         completeLatch.countDown();
       });
     });

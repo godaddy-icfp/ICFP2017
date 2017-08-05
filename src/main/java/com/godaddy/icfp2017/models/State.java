@@ -23,7 +23,7 @@ public class State {
   @JsonProperty
   private SimpleWeightedGraph<Site, River> claimedGraph;
 
-  public Integer getLastTime(Algorithms algorithm) {
+  public Long getLastTime(Algorithms algorithm) {
     return lastTime.get(algorithm);
   }
 
@@ -31,12 +31,12 @@ public class State {
     lastTime = new HashMap<>();
   }
 
-  public void setLastTime(Algorithms algorithm, Integer lastTime) {
+  public void setLastTime(Algorithms algorithm, Long lastTime) {
     this.lastTime.put(algorithm, lastTime);
   }
 
   @JsonProperty
-  private HashMap<Algorithms, Integer> lastTime;
+  private HashMap<Algorithms, Long> lastTime;
 
   @JsonProperty
   private int moveCount;
