@@ -42,7 +42,7 @@ final class ConnectedDecisionAlgorithm implements GraphAlgorithm {
 
                     if (sourceConnected && targetConnected) {
 
-                        ConnectivityInspector inspector = new ConnectivityInspector(state.getClaimedGraph());
+                        ConnectivityInspector<Site, River> inspector = new ConnectivityInspector<>(state.getClaimedGraph());
                         boolean redundantConnection;
                         redundantConnection = inspector.pathExists(source, target);
 
