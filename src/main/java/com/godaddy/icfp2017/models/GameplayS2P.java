@@ -2,7 +2,7 @@ package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class GameplayS2P extends S2P {
+public class GameplayS2P implements S2P {
   @JsonProperty("move")
   private PreviousMoves previousMoves;
 

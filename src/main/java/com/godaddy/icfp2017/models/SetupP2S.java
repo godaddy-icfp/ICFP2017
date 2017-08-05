@@ -1,7 +1,9 @@
 package com.godaddy.icfp2017.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SetupP2S implements P2S {
   @JsonProperty("ready")
   private int ready;

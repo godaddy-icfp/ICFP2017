@@ -2,7 +2,7 @@ package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SetupS2P extends S2P {
+public class SetupS2P implements S2P {
   @JsonProperty("punter")
   private int punter;
 
