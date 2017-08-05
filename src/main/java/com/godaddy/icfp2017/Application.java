@@ -6,6 +6,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import java.io.BufferedInputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 class Application {
@@ -26,6 +27,10 @@ class Application {
           .withOptionalArg().ofType(Integer.class)
           .describedAs("online server ip address");
 
+    parser.accepts("debug");
+
+    parser.accepts("capture");
+
     parser.accepts("?")
           .forHelp();
 
@@ -41,8 +46,14 @@ class Application {
 
     GameDriver gameDriver = null;
 
+    OutputStream debugStream = null;
+
+    if (options.has("debug")) {
+      debugStream = System.err;
+    }
+
     if (options.valueOf("mode").equals("offline")) {
-      gameDriver = new GameDriver(System.in, System.out, System.err, gameLogic);
+      gameDriver = new GameDriver(System.in, System.out, debugStream, gameLogic);
     }
 
     if (options.valueOf("mode").equals("online")) {
@@ -51,8 +62,11 @@ class Application {
       Socket skt = new Socket(host, port);
       gameDriver = new GameDriver(new BufferedInputStream(skt.getInputStream()),
                                   skt.getOutputStream(),
-                                  System.out,
+                                  debugStream,
                                   gameLogic);
+    }
+
+    if (options.has("capture")) {
     }
 
     assert gameDriver != null;

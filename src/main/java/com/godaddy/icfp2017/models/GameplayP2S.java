@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class GameplayP2S extends Move implements P2S {
+public class GameplayP2S extends Move implements PlayerToServer {
   @JsonProperty("state")
   private State state;
 

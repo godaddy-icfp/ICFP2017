@@ -2,7 +2,7 @@ package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class HandShakeP2S implements P2S {
+public class HandShakeP2S implements PlayerToServer {
   @JsonProperty("me")
   private String me;
 

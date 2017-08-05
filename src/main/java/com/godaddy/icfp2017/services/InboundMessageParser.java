@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.HandshakeS2P;
-import com.godaddy.icfp2017.models.S2P;
+import com.godaddy.icfp2017.models.ServerToPlayer;
 import com.godaddy.icfp2017.models.SetupS2P;
 
 import java.util.Optional;
@@ -14,8 +14,8 @@ public class InboundMessageParser {
 
   private final JsonFactory factory = JsonMapper.Instance.getFactory();
 
-  public Optional<S2P> getNextMessage(String input) throws Exception {
-    S2P s2p = null;
+  public Optional<ServerToPlayer> getNextMessage(String input) throws Exception {
+    ServerToPlayer s2p = null;
 
 
     final JsonParser parser = factory.createParser(input);

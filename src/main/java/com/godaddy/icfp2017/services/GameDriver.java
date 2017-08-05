@@ -5,10 +5,12 @@ import com.godaddy.icfp2017.models.GameplayP2S;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.HandShakeP2S;
 import com.godaddy.icfp2017.models.HandshakeS2P;
-import com.godaddy.icfp2017.models.P2S;
-import com.godaddy.icfp2017.models.S2P;
+import com.godaddy.icfp2017.models.ICFPMessage;
+import com.godaddy.icfp2017.models.PlayerToServer;
+import com.godaddy.icfp2017.models.ServerToPlayer;
 import com.godaddy.icfp2017.models.SetupP2S;
 import com.godaddy.icfp2017.models.SetupS2P;
+import com.google.common.collect.Queues;
 import com.google.common.io.ByteStreams;
 
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Optional;
+import java.util.Queue;
 
 public class GameDriver {
 
@@ -27,6 +30,7 @@ public class GameDriver {
 
   private final InboundMessageParser inboundMessageParser;
 
+  private final Queue<ICFPMessage> capture = Queues.newConcurrentLinkedQueue();
 
   public GameDriver(
       final InputStream inputStream,
@@ -39,8 +43,6 @@ public class GameDriver {
     this.gameLogic = gameLogic;
 
     inboundMessageParser = new InboundMessageParser();
-
-
   }
 
   public void run() throws Exception {
@@ -51,7 +53,7 @@ public class GameDriver {
     sendMessage(handShakeP2S);
 
     // get the handshake from the server
-    final Optional<S2P> message = getMessage();
+    final Optional<ServerToPlayer> message = getMessage();
 
     if (!message.isPresent()) {
       return;
@@ -61,31 +63,35 @@ public class GameDriver {
 
     while (true) {
       // read the next message from the server
-      final Optional<S2P> s2pOptional = getMessage();
+      final Optional<ServerToPlayer> s2pOptional = getMessage();
 
       if (!s2pOptional.isPresent()) {
         return;
       }
 
-      final S2P s2p = s2pOptional.get();
+      final ServerToPlayer serverToPlayerMessage = s2pOptional.get();
+
+      capture.add(serverToPlayerMessage);
 
       // setup
-      if (s2p instanceof SetupS2P) {
-        final SetupS2P setupS2P = (SetupS2P) s2p;
-        final SetupP2S setupP2S = gameLogic.setup(setupS2P);
-        sendMessage(setupP2S);
+      if (serverToPlayerMessage instanceof SetupS2P) {
+        final SetupS2P setupS2P = (SetupS2P) serverToPlayerMessage;
+        final SetupP2S setupResponse = gameLogic.setup(setupS2P);
+        sendMessage(setupResponse);
+        capture.add(setupResponse);
       }
 
       // gameplay
-      else if (s2p instanceof GameplayS2P) {
-        final GameplayS2P gameplayS2P = (GameplayS2P) s2p;
-        final GameplayP2S gameplayP2S = gameLogic.move(gameplayS2P);
-        sendMessage(gameplayP2S);
+      else if (serverToPlayerMessage instanceof GameplayS2P) {
+        final GameplayS2P gameplayS2P = (GameplayS2P) serverToPlayerMessage;
+        final GameplayP2S moveResponse = gameLogic.move(gameplayS2P);
+        sendMessage(moveResponse);
+        capture.add(moveResponse);
       }
     }
   }
 
-  private void sendMessage(P2S p2s) throws JsonProcessingException {
+  private void sendMessage(PlayerToServer p2s) throws JsonProcessingException {
 
     String json = JsonMapper.Instance.writeValueAsString(p2s);
     final String output = json.length() + 1 + ":" + json + '\n';
@@ -94,7 +100,7 @@ public class GameDriver {
     debugStream.println("out => " + output);
   }
 
-  private Optional<S2P> getMessage() throws Exception {
+  private Optional<ServerToPlayer> getMessage() throws Exception {
     final int messageLength = readInteger();
     if (messageLength == 0) {
       return Optional.empty();
