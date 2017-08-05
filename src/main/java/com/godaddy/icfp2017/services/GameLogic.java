@@ -25,13 +25,16 @@ public class GameLogic {
   private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
-          Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new);
+          Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
+          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new);
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
   private final ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
       Algorithms.AdjacentToMine, 1.0,
-      Algorithms.AdjacentToPath, 1.0);
+      Algorithms.AdjacentToPath, 1.0,
+      Algorithms.ConnectedDecisionAlgorithm, 1.0);
+
 
   public GameLogic() {
     executorService = Executors.newFixedThreadPool(Algorithms.values().length);
@@ -48,10 +51,11 @@ public class GameLogic {
     response.setReady(setup.getPunter());
     response.setState(state);
 
-    final Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> tuple = buildGraph(setup);
-    state.setGraph(tuple.right);
-    state.setMines(tuple.left);
-    state.setShortestPaths(RiverWeightingAlgorithm.apply(tuple.right, tuple.left));
+    final Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>> triple = buildGraphs(setup);
+    state.setClaimedGraph(triple.right);
+    state.setGraph(triple.middle);
+    state.setMines(triple.left);
+    state.setShortestPaths(RiverWeightingAlgorithm.apply(triple.middle, triple.left));
 
     this.currentState = state;
 
@@ -76,7 +80,7 @@ public class GameLogic {
     return bestRiver;
   }
 
-  public static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(final SetupS2P setup) {
+  public static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>>  buildGraph(final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
@@ -103,6 +107,47 @@ public class GameLogic {
     return Pair.of(
         mines.stream().map(siteById::get).collect(toImmutableSet()),
         builder.build());
+  }
+
+  public static Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>> buildGraphs(final SetupS2P setup) {
+    final Map map = setup.getMap();
+    final List<Site> sites = map.getSites();
+    final List<River> rivers = map.getRivers();
+    final ImmutableSet<Integer> mines = ImmutableSet.copyOf(map.getMines());
+    final ImmutableMap<Integer, Site> siteById = sites
+            .stream()
+            .collect(toImmutableMap(Site::getId, Function.identity()));
+
+    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builder =
+            SimpleWeightedGraph.builder(new LambdaEdgeFactory());
+
+    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> myClaimedBuilder =
+            SimpleWeightedGraph.builder(new LambdaEdgeFactory());
+
+    for (final Site site : sites) {
+      site.setMine(mines.contains(site.getId()));
+      builder.addVertex(site);
+      myClaimedBuilder.addVertex(site);
+    }
+
+    for (final River river : rivers) {
+      builder.addEdge(
+              siteById.get(river.getSource()),
+              siteById.get(river.getTarget()),
+              river);
+
+      if (river.getClaimedBy() == setup.getPunter()) {
+        myClaimedBuilder.addEdge(
+                siteById.get(river.getSource()),
+                siteById.get(river.getTarget()),
+                river);
+      }
+    }
+
+    return Triple.of(
+            mines.stream().map(siteById::get).collect(toImmutableSet()),
+            builder.build(),
+            myClaimedBuilder.build());
   }
 
   public GameplayP2S move(final GameplayS2P move) {
