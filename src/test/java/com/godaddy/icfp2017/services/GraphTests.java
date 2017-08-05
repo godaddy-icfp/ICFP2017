@@ -1,7 +1,5 @@
 package com.godaddy.icfp2017.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.godaddy.icfp2017.GameLogicTests;
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.SetupS2P;
 import com.godaddy.icfp2017.models.Site;
@@ -17,15 +15,13 @@ import java.io.InputStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class GraphTests {
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
   private static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> getSampleGame() throws IOException {
     final ByteSource byteSource = Resources.asByteSource(Resources.getResource(
         GraphTests.class,
         "/SampleGame.json"));
 
     try (final InputStream resourceAsStream = byteSource.openStream()) {
-      final SetupS2P setupS2P = OBJECT_MAPPER.readValue(resourceAsStream, SetupS2P.class);
+      final SetupS2P setupS2P = JsonMapper.Instance.readValue(resourceAsStream, SetupS2P.class);
       return GameLogic.buildGraph(setupS2P);
     }
   }
