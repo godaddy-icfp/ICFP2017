@@ -24,7 +24,7 @@ public class GraphTests {
   }
 
   @Test
-  public void () throws IOException {
+  public void test() throws IOException {
     final ClassLoader classLoader = GraphTests.class.getClassLoader();
     final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleGame.json");
 
