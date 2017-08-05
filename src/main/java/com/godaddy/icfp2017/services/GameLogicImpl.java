@@ -52,8 +52,8 @@ public class GameLogicImpl implements GameLogic {
 
     for (final River river : rivers) {
       builder.addEdge(
-          new Site(river.getSource()),
-          new Site(river.getTarget()),
+          siteById.get(river.getSource()),
+          siteById.get(river.getTarget()),
           river);
     }
 
