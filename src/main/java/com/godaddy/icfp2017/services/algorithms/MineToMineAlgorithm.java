@@ -9,14 +9,11 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 
 final public class MineToMineAlgorithm extends BaseAlgorithm {
-  private final Getter getter;
-  private final Setter setter;
 
   public MineToMineAlgorithm(
       final GraphAlgorithm.Getter getter,
       final GraphAlgorithm.Setter setter) {
-    this.getter = getter;
-    this.setter = setter;
+    super(getter, setter);
   }
 
   static double pathWeight(final double weight, final double length, final double diameter) {
@@ -45,9 +42,7 @@ final public class MineToMineAlgorithm extends BaseAlgorithm {
         final GraphPath<Site, River> path = shortestPaths.getPaths(source).getPath(sink);
         final double pathWeight = pathWeight(path.getWeight(), path.getLength(), diameter);
         for (final River river : path.getEdgeList()) {
-          setter.apply(
-              river,
-              pathWeight * Math.max(1.0, getter.apply(river)));
+          alter(river, value -> pathWeight * Math.max(1.0, value));
         }
       }
     }

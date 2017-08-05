@@ -8,12 +8,11 @@ import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
 public class AdjacentToPathAlgorithm extends BaseAlgorithm {
-  private final Setter setter;
 
   public AdjacentToPathAlgorithm(
       final GraphAlgorithm.Getter getter,
       final GraphAlgorithm.Setter setter) {
-    this.setter = setter;
+    super(getter, setter);
   }
 
   @Override

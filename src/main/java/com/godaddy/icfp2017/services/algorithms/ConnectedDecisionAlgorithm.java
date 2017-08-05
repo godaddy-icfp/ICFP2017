@@ -9,12 +9,11 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 
 final public class ConnectedDecisionAlgorithm extends BaseAlgorithm {
-    private final Setter setter;
 
     public ConnectedDecisionAlgorithm(
             final GraphAlgorithm.Getter getter,
             final GraphAlgorithm.Setter setter) {
-        this.setter = setter;
+        super(getter, setter);
     }
 
     @Override
