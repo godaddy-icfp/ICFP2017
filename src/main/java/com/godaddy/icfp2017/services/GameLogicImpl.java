@@ -1,14 +1,6 @@
 package com.godaddy.icfp2017.services;
 
-import com.godaddy.icfp2017.models.GameplayP2S;
-import com.godaddy.icfp2017.models.GameplayS2P;
-import com.godaddy.icfp2017.models.Map;
-import com.godaddy.icfp2017.models.Pass;
-import com.godaddy.icfp2017.models.River;
-import com.godaddy.icfp2017.models.SetupP2S;
-import com.godaddy.icfp2017.models.SetupS2P;
-import com.godaddy.icfp2017.models.Site;
-import com.godaddy.icfp2017.models.State;
+import com.godaddy.icfp2017.models.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.graph.SimpleWeightedGraph;
@@ -70,6 +62,8 @@ public class GameLogicImpl implements GameLogic {
       this.state = previousState;
     }
 
+    zeroClaimedEdges(move.getPreviousMoves(), state.getMap());
+
     Pass pass = new Pass();
     pass.setPunter(state.getPunter());
 
@@ -85,5 +79,22 @@ public class GameLogicImpl implements GameLogic {
     response.setPass(pass); // todo change this to setClaim
     response.setState(state);
     return response;
+  }
+
+  private void zeroClaimedEdges(
+      final PreviousMoves previousMoves,
+      final SimpleWeightedGraph<Site, River> map) {
+
+
+    final List<Move> moves = previousMoves.getMoves();
+    moves.stream()
+         .filter(m -> m.getClaim() != null)
+         .map(m -> m.getClaim())
+         .forEach(claim -> {
+           if (state.getPunter() != claim.getPunter()) {
+             final River edge = map.getEdge(new Site(claim.getSource()), new Site(claim.getTarget()));
+             map.setEdgeWeight(edge, 0);
+           }
+         });
   }
 }
