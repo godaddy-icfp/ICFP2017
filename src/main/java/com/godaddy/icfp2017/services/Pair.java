@@ -3,10 +3,10 @@ package com.godaddy.icfp2017.services;
 import com.google.common.base.Objects;
 
 final class Pair<T1, T2> {
-  final T1 left;
+  private final T1 left;
   final T2 right;
 
-  Pair(final T1 left, final T2 right) {
+  private Pair(final T1 left, final T2 right) {
     this.left = left;
     this.right = right;
   }
@@ -25,7 +25,7 @@ final class Pair<T1, T2> {
     return Objects.hashCode(left, right);
   }
 
-  public static <T1, T2> Pair<T1, T2> of(
+  static <T1, T2> Pair<T1, T2> of(
       final T1 left,
       final T2 right) {
     return new Pair<>(left, right);

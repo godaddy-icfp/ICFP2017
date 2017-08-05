@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 public class JsonMapper extends ObjectMapper {
   public static final JsonMapper Instance = new JsonMapper();
 
-  public JsonMapper() {
+  private JsonMapper() {
     registerModule(new GuavaModule());
   }
 }

@@ -24,6 +24,5 @@ out/
 .DS_Store
 .gradle/
 build/
-ICFP2017.iml
 classes/
 *.iml

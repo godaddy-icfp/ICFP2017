@@ -3,7 +3,6 @@ package com.godaddy.icfp2017.models.serialization;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.godaddy.icfp2017.models.State;
@@ -19,7 +18,7 @@ public class BinaryStateDeserializer extends StdDeserializer<State> {
   @Override
   public State deserialize(
       final JsonParser p,
-      final DeserializationContext ctxt) throws IOException, JsonProcessingException {
+      final DeserializationContext ctxt) throws IOException {
 
     final Kryo kryo = KryoFactory.createKryo();
 

@@ -1,9 +1,6 @@
 package com.godaddy.icfp2017.models.serialization;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.Serializer;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.JavaSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableMapSerializer;
@@ -15,7 +12,7 @@ class KryoFactory {
   private KryoFactory() {
   }
 
-  public static Kryo createKryo() {
+  static Kryo createKryo() {
     final Kryo kryo = new Kryo();
     kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
     kryo.register(SimpleWeightedGraph.class, new JavaSerializer());

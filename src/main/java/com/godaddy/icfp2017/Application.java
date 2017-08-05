@@ -8,7 +8,7 @@ import joptsimple.OptionSet;
 import java.io.BufferedInputStream;
 import java.net.Socket;
 
-public class Application {
+class Application {
 
   public static void main(String[] args) throws Exception {
     OptionParser parser = new OptionParser();
@@ -55,6 +55,7 @@ public class Application {
                                   gameLogic);
     }
 
+    assert gameDriver != null;
     gameDriver.run();
 
   }

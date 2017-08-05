@@ -50,5 +50,5 @@ jar {
 }
 
 run {
-    args '-mode=online', '-host=punter.inf.ed.ac.uk',  '-port=9004'
+    args '-mode=online', '-host=punter.inf.ed.ac.uk', '-port=9004'
 }

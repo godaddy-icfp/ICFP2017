@@ -124,7 +124,7 @@ public class GameLogic {
         builder.build());
   }
 
-  public static Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>>
+  private static Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>>
   buildGraphs(
       final SetupS2P setup) {
     final Map map = setup.getMap();
@@ -248,10 +248,7 @@ public class GameLogic {
              }
 
              edge.setClaimedBy(claim.getPunter());
-
-             if (edge != null) {
-               map.setEdgeWeight(edge, Weights.Max * 1000);
-             }
+             map.setEdgeWeight(edge, Weights.Max * 1000);
            }
          });
   }

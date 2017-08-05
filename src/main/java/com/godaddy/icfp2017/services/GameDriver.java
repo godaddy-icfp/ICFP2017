@@ -31,8 +31,7 @@ public class GameDriver {
       final InputStream inputStream,
       final OutputStream offlineOutputStream,
       final OutputStream debugStream,
-      final GameLogic gameLogic)
-      throws Exception {
+      final GameLogic gameLogic) {
     this.inputStream = inputStream;
 
     if (offlineOutputStream != null) {
@@ -95,14 +94,10 @@ public class GameDriver {
         final GameplayP2S gameplayP2S = gameLogic.move(gameplayS2P);
         sendMessage(gameplayP2S);
       }
-
-      else if (s2p == null) {
-        break;
-      }
     }
   }
 
-  public void sendMessage(P2S p2s) throws JsonProcessingException {
+  private void sendMessage(P2S p2s) throws JsonProcessingException {
 
     String json = JsonMapper.Instance.writeValueAsString(p2s);
     final String output = json.length() + 1 + ":" + json + '\n';
@@ -116,7 +111,7 @@ public class GameDriver {
     }
   }
 
-  public Optional<S2P> getMessage() throws Exception {
+  private Optional<S2P> getMessage() throws Exception {
     final int messageLength = readInteger();
     if (messageLength == 0) {
       return Optional.empty();

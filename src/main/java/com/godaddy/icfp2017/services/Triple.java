@@ -7,7 +7,7 @@ final class Triple<T1, T2, T3> {
     final T2 middle;
     final T3 right;
 
-    Triple(final T1 left, final T2 middle, final T3 right) {
+    private Triple(final T1 left, final T2 middle, final T3 right) {
         this.left = left;
         this.middle = middle;
         this.right = right;
@@ -28,10 +28,10 @@ final class Triple<T1, T2, T3> {
         return Objects.hashCode(left, right);
     }
 
-    public static <T1, T2, T3> Triple<T1, T2, T3> of(
-            final T1 left,
-            final T2 middle,
-            final T3 right) {
+    static <T1, T2, T3> Triple<T1, T2, T3> of(
+        final T1 left,
+        final T2 middle,
+        final T3 right) {
         return new Triple<>(left, middle, right);
     }
 }
