@@ -6,41 +6,41 @@ import com.godaddy.icfp2017.models.State;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
 public class AdjacentToPathAlgorithm implements GraphAlgorithm {
-  private final Algorithms algorithm;
-  private final SimpleWeightedGraph<Site, River> graph;
-  private final State state;
+  private final Setter setter;
 
-  public AdjacentToPathAlgorithm(final Algorithms algorithm, final State state) {
-    this.algorithm = algorithm;
-    this.graph = state.getGraph();
-    this.state = state;
+  public AdjacentToPathAlgorithm(
+      final GraphAlgorithm.Getter getter,
+      final GraphAlgorithm.Setter setter) {
+    this.setter = setter;
   }
 
-  public void run() {
-    this.graph.edgeSet()
+  @Override
+  public void run(final State state) {
+    final SimpleWeightedGraph<Site, River> graph = state.getGraph();
+    graph.edgeSet()
               .forEach(river -> {
                 boolean sourceConnected = false;
                 boolean targetConnected = false;
 
                 Site source = graph.getEdgeSource(river);
                 for (River sourceRiver : graph.edgesOf(source)) {
-                  if (sourceRiver.getClaimedBy() == this.state.getPunter()) {
+                  if (sourceRiver.getClaimedBy() == state.getPunter()) {
                     sourceConnected = true;
                   }
                 }
 
                 Site target = graph.getEdgeTarget(river);
                 for (River targetRiver : graph.edgesOf(target)) {
-                  if (targetRiver.getClaimedBy() == this.state.getPunter()) {
+                  if (targetRiver.getClaimedBy() == state.getPunter()) {
                     targetConnected = true;
                   }
                 }
 
                 if (sourceConnected && targetConnected) {
-                  river.getAlgorithmWeights().put(algorithm, Weights.Decent);
+                  setter.apply(river, Weights.Decent);
                 }
                 else if (sourceConnected || targetConnected) {
-                  river.getAlgorithmWeights().put(algorithm, Weights.Desired);
+                  setter.apply(river, Weights.Desired);
                 }
               });
   }

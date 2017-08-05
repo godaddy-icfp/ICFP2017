@@ -22,14 +22,14 @@ public class GameLogic {
 
   private State currentState;
 
-  private ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
+  private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new);
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
-  ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
+  private final ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
       Algorithms.AdjacentToMine, 1.0,
       Algorithms.AdjacentToPath, 1.0);
 
@@ -157,9 +157,11 @@ public class GameLogic {
 
   private void runAllAlgorithms(final CountDownLatch completeLatch, final State state) {
     algorithmCreators.forEach((algo, creator) -> {
-      final GraphAlgorithm graphAlgorithm = creator.create(algo, state);
+      final GraphAlgorithm graphAlgorithm = creator.create(
+          river -> river.getAlgorithmWeights().get(algo),
+          (river, score) -> river.getAlgorithmWeights().put(algo, score));
       executorService.submit(() -> {
-        graphAlgorithm.run();
+        graphAlgorithm.run(state);
         completeLatch.countDown();
       });
     });
