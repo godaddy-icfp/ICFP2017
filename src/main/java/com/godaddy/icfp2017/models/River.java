@@ -18,7 +18,7 @@ public class River {
   private HashMap<Algorithms, Double> algorithmWeights = new HashMap<>();
 
   @JsonProperty("claimedBy")
-  private int claimedBy;
+  private int claimedBy = -1;
 
   public int getSource() {
     return source;
@@ -50,5 +50,9 @@ public class River {
 
   public void setClaimedBy(int claimedBy) {
     this.claimedBy = claimedBy;
+  }
+
+  public boolean isClaimed() {
+    return this.claimedBy >= 0;
   }
 }
