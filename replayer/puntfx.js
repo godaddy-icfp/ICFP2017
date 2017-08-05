@@ -158,11 +158,12 @@ function replayLog() {
     });
 }
 
-var turnNumber = 0;
+var turnNumber = 0,
+    started = false;
 
 function processMessage(message) {
     try {
-        var json = message.split(/^[^{]+:(.+)/)[1];
+        var json = message.split(/^(?:[^{]+:)?(.+)/)[1];
         let msg = JSON.parse(json);
         // Initial message
         if (msg.map !== undefined) {
@@ -345,7 +346,7 @@ function updateEdgeOwner(punter, source, target) {
     const es = cy.edges("[source=\"" + source + "\"][target=\"" + target + "\"]");
     if (es.length > 0) {
         const e = es[0];
-        e.data()["owner"] = punter + "- t:"+turnNumber;
+        e.data()["owner"] = punter + "- t:" + turnNumber;
         e.style("line-color", getPunterColour(punter));
     } else {
         logError("Trying to update nonexistent edge! (" + source + " -- " + target + ")");
