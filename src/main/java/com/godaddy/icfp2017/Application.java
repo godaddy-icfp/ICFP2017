@@ -2,7 +2,6 @@ package com.godaddy.icfp2017;
 
 import com.godaddy.icfp2017.services.GameDriver;
 import com.godaddy.icfp2017.services.GameLogic;
-import com.godaddy.icfp2017.services.GameLogicImpl;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -37,7 +36,7 @@ public class Application {
       return;
     }
 
-    GameLogic gameLogic = new GameLogicImpl();
+    GameLogic gameLogic = new GameLogic();
 
 
     GameDriver gameDriver = null;
