@@ -19,6 +19,7 @@ import java.util.Optional;
 public class GameDriver {
 
   private final InputStream inputStream;
+  private final PrintStream offlineOutputStream;
   private final PrintStream debugStream;
 
   private final GameLogic gameLogic;
@@ -28,10 +29,18 @@ public class GameDriver {
 
   public GameDriver(
       final InputStream inputStream,
+      final OutputStream offlineOutputStream,
       final OutputStream debugStream,
       final GameLogic gameLogic)
       throws Exception {
     this.inputStream = inputStream;
+
+    if (offlineOutputStream != null) {
+      this.offlineOutputStream = new PrintStream(offlineOutputStream);
+    }
+    else {
+      this.offlineOutputStream = null;
+    }
 
     if (debugStream != null) {
       this.debugStream = new PrintStream(debugStream);
@@ -96,8 +105,13 @@ public class GameDriver {
   public void sendMessage(P2S p2s) throws JsonProcessingException {
 
     String json = JsonMapper.Instance.writeValueAsString(p2s);
+    final String output = json.length() + 1 + ":" + json + '\n';
+
+    if (offlineOutputStream != null) {
+      offlineOutputStream.print(output);
+    }
+
     if (debugStream != null) {
-      final String output = json.length() + 1 + ":" + json + '\n';
       debugStream.println("out => " + output);
     }
   }

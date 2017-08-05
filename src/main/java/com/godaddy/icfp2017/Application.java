@@ -42,7 +42,7 @@ public class Application {
     GameDriver gameDriver = null;
 
     if (options.valueOf("mode").equals("offline")) {
-      gameDriver = new GameDriver(System.in, System.err, gameLogic);
+      gameDriver = new GameDriver(System.in, System.out, System.err, gameLogic);
     }
 
     if (options.valueOf("mode").equals("online")) {
@@ -50,6 +50,7 @@ public class Application {
       final Integer port = (Integer) options.valueOf("port");
       Socket skt = new Socket(host, port);
       gameDriver = new GameDriver(new BufferedInputStream(skt.getInputStream()),
+                                  null,
                                   System.out,
                                   gameLogic);
     }
