@@ -36,7 +36,7 @@ public class Site {
 
   @Override
   public String toString() {
-    return super.toString();
+    return Integer.toString(id);
   }
 
   public boolean isMine() {

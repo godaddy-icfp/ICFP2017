@@ -26,6 +26,7 @@ repositories {
 
 dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.0'
+    compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-guava', version: '2.9.0'
     compile group: 'com.google.guava', name: 'guava', version: '22.0'
     compile group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.1'
 

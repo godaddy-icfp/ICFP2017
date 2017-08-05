@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 public class GameLogic {
   private final ExecutorService executorService;
@@ -37,8 +38,10 @@ public class GameLogic {
     response.setReady(setup.getPunter());
     response.setState(state);
 
-    final SimpleWeightedGraph<Site, River> graph = buildGraph(setup);
-    state.setMap(graph);
+    final Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> tuple = buildGraph(setup);
+    state.setMap(tuple.right);
+    state.setMines(tuple.left);
+    state.setShortestPaths(RiverWeightingAlgorithm.apply(tuple.right, tuple.left));
 
     return response;
   }
@@ -65,7 +68,7 @@ public class GameLogic {
     return bestRiver;
   }
 
-  public static SimpleWeightedGraph<Site, River> buildGraph(final SetupS2P setup) {
+  public static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
@@ -89,7 +92,9 @@ public class GameLogic {
           river);
     }
 
-    return builder.build();
+    return Pair.of(
+        mines.stream().map(siteById::get).collect(toImmutableSet()),
+        builder.build());
   }
 
   public GameplayP2S move(final GameplayS2P move) {
