@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class State {
   @JsonProperty
-  private String foo;
+  private int punter;
 
-  public String getFoo() {
-    return foo;
+  public int getPunter() {
+    return punter;
   }
 
-  public void setFoo(final String foo) {
-    this.foo = foo;
+  public void setPunter(final int punter) {
+    this.punter = punter;
   }
 }
