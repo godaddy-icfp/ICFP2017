@@ -1,4 +1,4 @@
 package com.godaddy.icfp2017.models;
 
-public abstract class S2P {
+public interface S2P {
 }
