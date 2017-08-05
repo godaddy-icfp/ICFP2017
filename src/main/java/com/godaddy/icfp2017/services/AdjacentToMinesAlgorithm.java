@@ -4,13 +4,14 @@ import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
-public class AdjacentToMinesAlgorithm {
+public class AdjacentToMinesAlgorithm implements GraphAlgorithm {
   private SimpleWeightedGraph<Site, River> graph;
 
   public AdjacentToMinesAlgorithm(SimpleWeightedGraph<Site, River> graph) {
     this.graph = graph;
   }
 
+  @Override
   public void run() {
     this.graph.vertexSet()
               .forEach(site -> {

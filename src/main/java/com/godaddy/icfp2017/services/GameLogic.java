@@ -7,12 +7,25 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 public class GameLogic {
   private State state;
+
+  private final ExecutorService executorService;
+  private ImmutableMap<Algorithms, Function<SimpleWeightedGraph<Site, River>, GraphAlgorithm>> algorithmCreators =
+      ImmutableMap.of(
+          Algorithms.Adjacent, AdjacentToMinesAlgorithm::new);
+
+  public GameLogic() {
+    executorService = Executors.newFixedThreadPool(Algorithms.values().length);
+  }
 
   public SetupP2S setup(final SetupS2P setup) {
     state = new State();
@@ -70,8 +83,16 @@ public class GameLogic {
     Pass pass = new Pass();
     pass.setPunter(state.getPunter());
 
-    AdjacentToMinesAlgorithm a1 = new AdjacentToMinesAlgorithm(this.state.getMap());
-    a1.run();
+    final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
+
+    runAllAlgorithms(completeLatch);
+
+    try {
+      completeLatch.await(900, TimeUnit.MILLISECONDS);
+    }
+    catch (InterruptedException e) {
+      // ignore so we respond
+    }
 
     // todo initialize a reasonable claim
     //    Claim claim = new Claim();
@@ -84,7 +105,18 @@ public class GameLogic {
     final GameplayP2S response = new GameplayP2S();
     response.setPass(pass); // todo change this to setClaim
     response.setState(state);
+
     return response;
+  }
+
+  private void runAllAlgorithms(final CountDownLatch completeLatch) {
+    algorithmCreators.forEach((algo, creator) -> {
+      final GraphAlgorithm graphAlgorithm = creator.apply(this.state.getMap());
+      executorService.submit(() -> {
+        graphAlgorithm.run();
+        completeLatch.countDown();
+      });
+    });
   }
 
   private void zeroClaimedEdges(
