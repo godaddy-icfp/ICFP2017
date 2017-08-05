@@ -143,6 +143,7 @@ public class GameLogic {
     claim.setPunter(currentState.getPunter());
     claim.setTarget(bestRiver.getTarget());
     claim.setSource(bestRiver.getSource());
+    bestRiver.setClaimedBy(currentState.getPunter());
 
     // initialize the response
     final GameplayP2S response = new GameplayP2S();
@@ -174,7 +175,20 @@ public class GameLogic {
          .map(m -> m.getClaim())
          .forEach(claim -> {
            if (state.getPunter() != claim.getPunter()) {
-             final River edge = map.getEdge(new Site(claim.getSource()), new Site(claim.getTarget()));
+             final Site sourceVertex = new Site(claim.getSource());
+             final Site targetVertex = new Site(claim.getTarget());
+
+             final River edgeSource = map.getEdge(sourceVertex, targetVertex);
+
+             final River edge = Optional.ofNullable(edgeSource)
+                                        .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
+
+             if (edge == null) {
+               return;
+             }
+
+             edge.setClaimedBy(claim.getPunter());
+
              if (edge != null) {
                map.setEdgeWeight(edge, Weights.Zero);
              }
