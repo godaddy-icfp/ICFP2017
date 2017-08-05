@@ -100,7 +100,7 @@ public class GameLogic {
            if (state.getPunter() != claim.getPunter()) {
              final River edge = map.getEdge(new Site(claim.getSource()), new Site(claim.getTarget()));
              if (edge != null) {
-               map.setEdgeWeight(edge, 0);
+               map.setEdgeWeight(edge, Weights.Zero);
              }
            }
          });
