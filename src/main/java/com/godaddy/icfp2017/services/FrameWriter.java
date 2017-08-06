@@ -25,12 +25,13 @@ final class FrameWriter implements Consumer<byte[]> {
     debug.accept(bytes);
 
     final StringBuilder sb = new StringBuilder(10);
-    sb.append(bytes.length);
+    sb.append(bytes.length + 1);
     sb.append(':');
 
     try {
       outputStream.write(sb.toString().getBytes(StandardCharsets.US_ASCII));
       outputStream.write(bytes);
+      outputStream.write('\n');
       outputStream.flush();
     } catch (IOException e) {
       throw new RuntimeException(e);

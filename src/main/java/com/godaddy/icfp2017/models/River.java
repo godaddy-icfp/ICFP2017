@@ -24,13 +24,8 @@ public class River extends DefaultWeightedEdge implements Serializable {
   @JsonProperty("claimedBy")
   private int claimedBy = -1;
 
-  // Source to Target
-  @JsonProperty("maxEnemyPathFromSites")
+  @JsonIgnore
   private ConcurrentHashMap<Site, Integer> maxEnemyPathFromSites = new ConcurrentHashMap<>();
-
-  // Target to Source
-  @JsonProperty("maxEnemyPathToSites")
-  private ConcurrentHashMap<Site, Integer> maxEnemyPathToSites = new ConcurrentHashMap<>();
 
   public River() {
   }
@@ -62,14 +57,6 @@ public class River extends DefaultWeightedEdge implements Serializable {
 
   public void setMaxEnemyPathFromSites(final ConcurrentHashMap<Site, Integer> paths) {
     this.maxEnemyPathFromSites = paths;
-  }
-
-  public ConcurrentHashMap<Site, Integer> getMaxEnemyPathToSites() {
-    return maxEnemyPathToSites;
-  }
-
-  public void setMaxEnemyPathToSites(final ConcurrentHashMap<Site, Integer> paths) {
-    this.maxEnemyPathToSites = paths;
   }
 
   public ConcurrentHashMap<Algorithms, Double> getAlgorithmWeights() {

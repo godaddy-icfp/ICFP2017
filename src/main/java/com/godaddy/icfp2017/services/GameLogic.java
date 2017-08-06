@@ -317,7 +317,6 @@ public class GameLogic implements AutoCloseable {
       final Site targetVertex,
       final River edge,
       final int punter) {
-
     // Look at source, and for each site
     //  compute the min weight across all edges. This will be the the path closest to the site
 
@@ -325,7 +324,12 @@ public class GameLogic implements AutoCloseable {
 
     graphOfEnemyMoves.edgesOf(sourceVertex).stream().filter(river -> river.getClaimedBy() == punter).forEach(river -> {
       river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
-        if (edge.getMaxEnemyPathFromSites().containsKey(site) && ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site))) {
+        if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
+          if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
+            edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+          }
+        }
+        else {
           edge.getMaxEnemyPathFromSites().put(site, weight + 1);
         }
       });
@@ -333,7 +337,12 @@ public class GameLogic implements AutoCloseable {
 
     graphOfEnemyMoves.edgesOf(targetVertex).stream().filter(river -> river.getClaimedBy() == punter).forEach(river -> {
       river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
-        if (edge.getMaxEnemyPathFromSites().containsKey(site) && ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site))) {
+        if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
+          if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
+            edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+          }
+        }
+        else {
           edge.getMaxEnemyPathFromSites().put(site, weight + 1);
         }
       });
