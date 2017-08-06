@@ -3,7 +3,6 @@ package com.godaddy.icfp2017.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.godaddy.icfp2017.models.*;
 import com.google.common.collect.Queues;
-import com.google.common.io.ByteStreams;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,12 +28,12 @@ public class GameDriver implements AutoCloseable {
   public GameDriver(
       final InputStream inputStream,
       final OutputStream outputStream,
-      final OutputStream debugStream,
+      final PrintStream debugStream,
       final GameLogic gameLogic,
       final boolean shouldCapture) {
     this.inputStream = inputStream;
     this.outputStream = new PrintStream(outputStream);
-    this.debugStream = new PrintStream(Optional.ofNullable(debugStream).orElseGet(ByteStreams::nullOutputStream));
+    this.debugStream = debugStream;
     this.gameLogic = gameLogic;
     this.shouldCapture = shouldCapture;
 
@@ -80,23 +79,23 @@ public class GameDriver implements AutoCloseable {
         if (shouldCapture) {
           capture.add(setupResponse);
         }
-      }
 
-      // gameplay
-      else if (serverToPlayerMessage instanceof GameplayS2P) {
-        final GameplayS2P gameplayS2P = (GameplayS2P) serverToPlayerMessage;
-        final GameplayP2S moveResponse = gameLogic.move(gameplayS2P, null);
-        sendMessage(moveResponse);
-        if (shouldCapture) {
-          capture.add(moveResponse);
+        // gameplay
+        else if (serverToPlayerMessage instanceof GameplayS2P) {
+          final GameplayS2P gameplayS2P = (GameplayS2P) serverToPlayerMessage;
+          final GameplayP2S moveResponse = gameLogic.move(gameplayS2P);
+          sendMessage(moveResponse);
+          if (shouldCapture) {
+            capture.add(moveResponse);
+          }
         }
-      }
-      else if (serverToPlayerMessage instanceof TimeoutServerToPlayer) {
-        debugStream.println("Got a timeout message");
-      }
-      else if (serverToPlayerMessage instanceof GameEndServerToPlayer) {
-        debugStream.println("game over");
-        return;
+        else if (serverToPlayerMessage instanceof TimeoutServerToPlayer) {
+          debugStream.println("Got a timeout message");
+        }
+        else if (serverToPlayerMessage instanceof GameEndServerToPlayer) {
+          debugStream.println("game over");
+          return;
+        }
       }
     }
   }

@@ -25,8 +25,7 @@ public class State {
   @JsonProperty
   private SimpleWeightedGraph<Site, River> graph;
 
-  @JsonProperty
-  private SimpleWeightedGraph<Site, River> claimedGraph;
+
   private ImmutableMap<Integer, Site> siteToMap;
 
   public Long getLastTime(String algorithm) {
@@ -71,16 +70,8 @@ public class State {
     return graph;
   }
 
-  public SimpleWeightedGraph<Site, River> getClaimedGraph() {
-    return claimedGraph;
-  }
-
   public void setGraph(final SimpleWeightedGraph<Site, River> graph) {
     this.graph = graph;
-  }
-
-  public void setClaimedGraph(final SimpleWeightedGraph<Site, River> graph) {
-    this.claimedGraph = graph;
   }
 
   public int getMoveCount() {
