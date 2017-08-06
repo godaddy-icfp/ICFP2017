@@ -246,7 +246,7 @@ public class GameLogic implements AutoCloseable {
 
   public GraphAlgorithm getGraphAlgorithm(Algorithms algorithm) {
     return algorithmCreators.get(algorithm).create(
-          river -> river.getAlgorithmWeights().get(algorithm),
+          river -> river.getAlgorithmWeights().getOrDefault(algorithm, 1.0),
           (river, score) -> {
             river.getAlgorithmWeights().put(algorithm, score);
             return score;
