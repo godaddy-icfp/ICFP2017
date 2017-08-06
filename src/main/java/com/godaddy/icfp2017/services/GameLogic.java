@@ -280,25 +280,27 @@ public class GameLogic implements AutoCloseable {
 
     final List<Move> moves = previousMoves.getMoves();
     moves.stream()
-        .filter(m -> m.getClaim() != null)
-        .map(Move::getClaim)
-        .forEach(claim -> {
-          if (state.getPunter() != claim.getPunter()) {
-            final Site sourceVertex = new Site(claim.getSource());
-            final Site targetVertex = new Site(claim.getTarget());
+         .filter(m -> m.getClaim() != null)
+         .map(Move::getClaim)
+         .forEach(claim -> {
+           final Site sourceVertex = new Site(claim.getSource());
+           final Site targetVertex = new Site(claim.getTarget());
+           final River edge = Optional.ofNullable(map.getEdge(sourceVertex, targetVertex))
+               .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
+           if (edge == null) {
+             return;
+           }
 
-            final River edgeSource = map.getEdge(sourceVertex, targetVertex);
+           edge.setClaimedBy(claim.getPunter());
 
-            final River edge = Optional.ofNullable(edgeSource)
-                .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
-
-            if (edge == null) {
-              return;
-            }
-
-            edge.setClaimedBy(claim.getPunter());
-            map.setEdgeWeight(edge, Weights.Max * 1000);
-          }
-        });
+           if (state.getPunter() != claim.getPunter()) {
+             // remove this edge entirely from the graph so we can avoid
+             // traversing it during any analysis passes
+             map.removeEdge(edge);
+           } else {
+             // if we own the edge mark it as weight 0, it's free to use
+             map.setEdgeWeight(edge, 0.0);
+           }
+         });
   }
 }
