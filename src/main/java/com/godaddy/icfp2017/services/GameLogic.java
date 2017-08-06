@@ -257,8 +257,13 @@ public class GameLogic implements AutoCloseable {
       Algorithms algorithm) {
     final GraphAlgorithm graphAlgorithm = getGraphAlgorithm(algorithm);
     executorService.submit(() -> {
-      graphAlgorithm.run(algorithm, state);
-      completeLatch.countDown();
+      try {
+        graphAlgorithm.run(algorithm, state);
+      } catch (Exception e) {
+        System.out.println(algorithm + ": " + e.toString());
+      } finally {
+        completeLatch.countDown();
+      }
     });
   }
 
