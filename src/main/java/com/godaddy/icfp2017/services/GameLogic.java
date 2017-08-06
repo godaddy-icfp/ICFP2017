@@ -49,21 +49,21 @@ public class GameLogic implements AutoCloseable {
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
   private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.<Algorithms, Double>builder()
-      .put(Algorithms.AdjacentToMine, 2.0)
-      .put(Algorithms.AdjacentToPath, 0.5)
-      .put(Algorithms.ConnectedDecision, 0.5)
-      .put(Algorithms.Connectedness, 0.5)
-      .put(Algorithms.MineToMine, 3.0)
-      .put(Algorithms.MinimumSpanningTree, 2.0)
+      .put(Algorithms.AdjacentToMine, 0.8)
+      .put(Algorithms.AdjacentToPath, 0.25)
+      .put(Algorithms.ConnectedDecision, 0.25)
+      .put(Algorithms.Connectedness, 0.25)
+      .put(Algorithms.MineToMine, 1.0)
+      .put(Algorithms.MinimumSpanningTree, 0.8)
       .build();
 
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.<Algorithms, Double>builder()
-      .put(Algorithms.AdjacentToMine, 1.0)
-      .put(Algorithms.AdjacentToPath, 1.0)
-      .put(Algorithms.ConnectedDecision, 0.5)
-      .put(Algorithms.Connectedness, 1.0)
-      .put(Algorithms.MineToMine, 3.0)
-      .put(Algorithms.MinimumSpanningTree, 3.0)
+      .put(Algorithms.AdjacentToMine, 0.5)
+      .put(Algorithms.AdjacentToPath, 0.5)
+      .put(Algorithms.ConnectedDecision, 0.25)
+      .put(Algorithms.Connectedness, 0.5)
+      .put(Algorithms.MineToMine, 1.0)
+      .put(Algorithms.MinimumSpanningTree, 1.0)
       .build();
 
   private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
