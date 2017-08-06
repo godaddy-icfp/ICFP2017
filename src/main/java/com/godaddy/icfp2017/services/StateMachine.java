@@ -17,6 +17,7 @@ import java.util.function.Function;
 final class StateMachine {
   interface Handler<T> {
     void capture(final ICFPMessage message);
+    void debug(String s);
     SetupP2S setup(final SetupS2P message);
     GameplayP2S gameplay(final GameplayS2P message);
     T timeout();
@@ -78,9 +79,12 @@ final class StateMachine {
         final GameEndServerToPlayer serverToPlayer = MAPPER.treeToValue(jsonNode, GameEndServerToPlayer.class);
         handler.capture(serverToPlayer);
         return handler.stop(serverToPlayer);
+      } else {
+        // unknown message?
+        handler.debug("Unknown message received: " + jsonNode.toString());
       }
     }
 
-    throw new IllegalStateException();
+    throw new IllegalStateException("Terminal message not received");
   }
 }
