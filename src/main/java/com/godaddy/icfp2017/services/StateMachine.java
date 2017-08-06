@@ -1,8 +1,6 @@
 package com.godaddy.icfp2017.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.godaddy.icfp2017.models.GameEndServerToPlayer;
 import com.godaddy.icfp2017.models.GameplayP2S;
@@ -10,15 +8,21 @@ import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.HandShakeP2S;
 import com.godaddy.icfp2017.models.HandshakeS2P;
 import com.godaddy.icfp2017.models.ICFPMessage;
-import com.godaddy.icfp2017.models.ServerToPlayer;
 import com.godaddy.icfp2017.models.SetupP2S;
 import com.godaddy.icfp2017.models.SetupS2P;
-import com.godaddy.icfp2017.models.TimeoutServerToPlayer;
 
 import java.io.IOException;
 import java.util.function.Function;
 
-public final class StateMachine {
+final class StateMachine {
+  interface Handler<T> {
+    void capture(final ICFPMessage message);
+    SetupP2S setup(final SetupS2P message);
+    GameplayP2S gameplay(final GameplayS2P message);
+    T timeout();
+    T stop(final GameEndServerToPlayer message);
+  }
+
   private static final ObjectMapper MAPPER = JsonMapper.Instance;
 
   private final FrameReader input;
@@ -37,7 +41,8 @@ public final class StateMachine {
 
   <T> T handshake(
       final HandShakeP2S message,
-      final Function<HandshakeS2P, Handler<T>> handler) throws IOException {
+      final Function<HandshakeS2P,
+      Handler<T>> handler) throws IOException {
     send(message);
 
     if (!input.hasNext()) {
@@ -77,13 +82,5 @@ public final class StateMachine {
     }
 
     throw new IllegalStateException();
-  }
-
-  interface Handler<T> {
-    void capture(final ICFPMessage message);
-    SetupP2S setup(final SetupS2P message);
-    GameplayP2S gameplay(final GameplayS2P message);
-    T timeout();
-    T stop(final GameEndServerToPlayer message);
   }
 }
