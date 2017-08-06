@@ -10,17 +10,14 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 final class GraphConstruction {
   final ImmutableSet<Site> mines;
   final SimpleWeightedGraph<Site, River> graph;
-  final SimpleWeightedGraph<Site, River> claimedGraph;
   final ImmutableMap<Integer, Site> siteToMap;
 
   GraphConstruction(
       final ImmutableSet<Site> mines,
       final SimpleWeightedGraph<Site, River> graph,
-      final SimpleWeightedGraph<Site, River> claimedGraph,
       final ImmutableMap<Integer, Site> siteToMap) {
     this.mines = mines;
     this.graph = graph;
-    this.claimedGraph = claimedGraph;
     this.siteToMap = siteToMap;
   }
 
@@ -31,12 +28,11 @@ final class GraphConstruction {
     final GraphConstruction that = (GraphConstruction) o;
     return Objects.equal(mines, that.mines) &&
         Objects.equal(graph, that.graph) &&
-        Objects.equal(claimedGraph, that.claimedGraph) &&
         Objects.equal(siteToMap, that.siteToMap);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mines, graph, claimedGraph, siteToMap);
+    return Objects.hashCode(mines, graph, siteToMap);
   }
 }

@@ -67,7 +67,6 @@ public class GameLogic implements AutoCloseable {
     response.setState(state);
 
     final GraphConstruction graphConstruction = buildGraphs(setup);
-    state.setClaimedGraph(graphConstruction.claimedGraph);
     state.setGraph(graphConstruction.graph);
     state.setMines(graphConstruction.mines);
     state.setSiteToMap(graphConstruction.siteToMap);
@@ -152,14 +151,9 @@ public class GameLogic implements AutoCloseable {
     final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builder =
         SimpleWeightedGraph.builder(new LambdaEdgeFactory());
 
-    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?>
-        myClaimedBuilder =
-        SimpleWeightedGraph.builder(new LambdaEdgeFactory());
-
     for (final Site site : sites) {
       site.setMine(mines.contains(site.getId()));
       builder.addVertex(site);
-      myClaimedBuilder.addVertex(site);
     }
 
     for (final River river : rivers) {
@@ -167,23 +161,11 @@ public class GameLogic implements AutoCloseable {
           siteById.get(river.getSource()),
           siteById.get(river.getTarget()),
           river);
-
-      // TODO:
-      // Tim believes this doesn't make any sense because when we build a graph we should never
-      // have any rivers that are claimed
-      if (river.getClaimedBy() == setup.getPunter()) {
-        Preconditions.checkState(false);
-        myClaimedBuilder.addEdge(
-            siteById.get(river.getSource()),
-            siteById.get(river.getTarget()),
-            river);
-      }
     }
 
     return new GraphConstruction(
         mines.stream().map(siteById::get).collect(toImmutableSet()),
         builder.build(),
-        myClaimedBuilder.build(),
         siteById);
   }
 
