@@ -191,33 +191,20 @@ public class GameLogic implements AutoCloseable {
   private final Long MAX_TURN_TIME = 900L;
   public GameplayP2S move(
       final GameplayS2P move) {
-    // load previous state
-
     Long startTime = System.currentTimeMillis();
 
-    final State currentState = Optional.ofNullable(move.getPreviousState())
-                                       .orElseGet(() -> Optional.ofNullable(this.currentState)
-                                                                .orElseThrow(IllegalStateException::new));
-    zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState.getGraphOfEnemyMoves(), currentState);
+    final State currentState = getState(move);
+    runAnalyzers(currentState);
+    runAlgorithms(startTime, currentState);
 
-    analyzers.keySet().forEach(key -> {
-      analyzers.get(key).run(key.toString(), currentState);
-    });
+    final GameplayP2S response = calculateBestMove(currentState);
+    currentState.setMoveCount(currentState.getMoveCount() + 1);
+    response.setState(currentState);
 
-    final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
+    return response;
+  }
 
-    Long timeAvailable = MAX_TURN_TIME - (System.currentTimeMillis() - startTime);
-    runAllAlgorithms(completeLatch, currentState);
-    try {
-      final boolean allCompleted = completeLatch.await(timeAvailable, TimeUnit.MILLISECONDS);
-      if (!allCompleted) {
-        debugStream.println("Some algorithms didn't finish");
-      }
-    }
-    catch (InterruptedException e) {
-      // ignore so we respond
-    }
-
+  private GameplayP2S calculateBestMove(State currentState) {
     if (!mineAdjacenciesExist(currentState)) {
       strategyState = algorithmValuesProgress;
     }
@@ -226,7 +213,7 @@ public class GameLogic implements AutoCloseable {
     Optional<River> bestRiver = this.computeWeightOnGraph(currentState, strategyState);
 
     // initialize the response
-    final GameplayP2S response = bestRiver
+    return bestRiver
         .map(river -> {
           final GameplayP2S r = new GameplayP2S();
           final Claim claim = new Claim();
@@ -244,11 +231,36 @@ public class GameLogic implements AutoCloseable {
           r.setPass(pass);
           return r;
         });
+  }
 
-    currentState.setMoveCount(currentState.getMoveCount() + 1);
-    response.setState(currentState);
+  private void runAlgorithms(Long startTime, State currentState) {
+    final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
-    return response;
+    Long timeAvailable = MAX_TURN_TIME - (System.currentTimeMillis() - startTime);
+    runAllAlgorithms(completeLatch, currentState);
+    try {
+      final boolean allCompleted = completeLatch.await(timeAvailable, TimeUnit.MILLISECONDS);
+      if (!allCompleted) {
+        debugStream.println("Some algorithms didn't finish");
+      }
+    }
+    catch (InterruptedException e) {
+      // ignore so we respond
+    }
+  }
+
+  private void runAnalyzers(State currentState) {
+    analyzers.keySet().forEach(key -> {
+      analyzers.get(key).run(key.toString(), currentState);
+    });
+  }
+
+  private State getState(GameplayS2P move) {
+    final State currentState = Optional.ofNullable(move.getPreviousState())
+                                       .orElseGet(() -> Optional.ofNullable(this.currentState)
+                                                                .orElseThrow(IllegalStateException::new));
+    zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState.getGraphOfEnemyMoves(), currentState);
+    return currentState;
   }
 
   public boolean isUsingAlgorithm(final Algorithms algorithm) {
