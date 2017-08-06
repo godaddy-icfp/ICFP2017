@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.godaddy.icfp2017.models.serialization.BinaryStateDeserializer;
 import com.godaddy.icfp2017.models.serialization.BinaryStateSerializer;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -22,6 +23,7 @@ public class State {
 
   @JsonProperty
   private SimpleWeightedGraph<Site, River> claimedGraph;
+  private ImmutableMap<Integer, Site> siteToMap;
 
   public Long getLastTime(Algorithms algorithm) {
     return lastTime.get(algorithm);
@@ -103,5 +105,13 @@ public class State {
 
   public void setPunters(int punters) {
     this.punters = punters;
+  }
+
+  public void setSiteToMap(final ImmutableMap<Integer, Site> siteToMap) {
+    this.siteToMap = siteToMap;
+  }
+
+  public ImmutableMap<Integer, Site> getSiteToMap() {
+    return siteToMap;
   }
 }
