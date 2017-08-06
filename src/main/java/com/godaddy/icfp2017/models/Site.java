@@ -15,7 +15,9 @@ public class Site implements Serializable {
   private double x;
   private double y;
 
-  private int ownClaimCount;
+  private int ownedConnectedRivers;
+  private int totalConnectedRivers;
+  private boolean isOwned;
 
   public Site() {
   }
@@ -71,11 +73,17 @@ public class Site implements Serializable {
     this.x = x;
   }
 
-  public int getOwnClaimCount() {
-    return ownClaimCount;
+  public int getOwnedConnectedRivers() {
+    return ownedConnectedRivers;
   }
 
-  public void setOwnClaimCount(int ownClaimCount) {
-    this.ownClaimCount = ownClaimCount;
+  public void setOwnedConnectedRivers(int ownedConnectedRivers) {
+    this.ownedConnectedRivers = ownedConnectedRivers;
   }
+
+  public int getTotalConnectedRivers() { return totalConnectedRivers; }
+
+  public void setTotalConnectedRivers(int totalConnectedRivers) { this.totalConnectedRivers = totalConnectedRivers; }
+
+  public boolean isOwned() { return ownedConnectedRivers > 0; }
 }
