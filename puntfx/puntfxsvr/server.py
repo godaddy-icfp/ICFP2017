@@ -91,6 +91,7 @@ def main_game():
     moves = []
     num_moves = 0
     max_num_moves = len(map_data["sites"])
+    seen_edges = {}
 
     for i in six.moves.range(max_players):
         moves.append({"pass" : {"punter" : i}})
@@ -110,8 +111,30 @@ def main_game():
             players[i]["to_client_queue"].put(move)
             move = players[i]["from_client_queue"].get()
             # TODO validate move
-            # Remove state
+            # Remove state from the move since we shouldn't be sending it back to the client
             move.pop('state', None)
+
+            # Test for pass
+
+            if "pass" in move :
+                print("Player " + players[i]["name"] + " passed!")
+            else :
+                # Check that this move is good
+                small = move["claim"]["source"]
+                big = move["claim"]["target"]
+                if small > big:
+                    temp = small
+                    small = big
+                    big = small
+                if (small, big) in seen_edges :
+                    print("####################")
+                    print("####################")
+                    print("DUPLICATE")
+                    print("####################")
+                    print("####################")
+                else:
+                    seen_edges[(small, big)] = True
+
             print("Received moved: " + players[i]["name"] + " " + json.dumps(move))
             moves.append(move)
             moves = moves[1:]
