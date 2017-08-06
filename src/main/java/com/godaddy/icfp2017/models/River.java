@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import java.util.HashMap;
 import org.jgrapht.graph.DefaultWeightedEdge;
 
 import java.io.Serializable;
@@ -22,6 +23,14 @@ public class River extends DefaultWeightedEdge implements Serializable {
 
   @JsonProperty("claimedBy")
   private int claimedBy = -1;
+
+  // Source to Target
+  @JsonProperty("maxEnemyPathFromSites")
+  private ConcurrentHashMap<Site, Integer> maxEnemyPathFromSites = new ConcurrentHashMap<>();
+
+  // Target to Source
+  @JsonProperty("maxEnemyPathToSites")
+  private ConcurrentHashMap<Site, Integer> maxEnemyPathToSites = new ConcurrentHashMap<>();
 
   public River() {
   }
@@ -45,6 +54,22 @@ public class River extends DefaultWeightedEdge implements Serializable {
 
   public void setTarget(final int target) {
     this.target = target;
+  }
+
+  public ConcurrentHashMap<Site, Integer> getMaxEnemyPathFromSites() {
+    return maxEnemyPathFromSites;
+  }
+
+  public void setMaxEnemyPathFromSites(final ConcurrentHashMap<Site, Integer> paths) {
+    this.maxEnemyPathFromSites = paths;
+  }
+
+  public ConcurrentHashMap<Site, Integer> getMaxEnemyPathToSites() {
+    return maxEnemyPathToSites;
+  }
+
+  public void setMaxEnemyPathToSites(final ConcurrentHashMap<Site, Integer> paths) {
+    this.maxEnemyPathToSites = paths;
   }
 
   public ConcurrentHashMap<Algorithms, Double> getAlgorithmWeights() {

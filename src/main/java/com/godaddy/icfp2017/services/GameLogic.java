@@ -6,6 +6,7 @@ import com.godaddy.icfp2017.services.analysis.Analyzers;
 import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
 import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
 import com.godaddy.icfp2017.services.analysis.SiteConnectivityAnalyzer;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -310,6 +311,52 @@ public class GameLogic implements AutoCloseable {
     }
   }
 
+  private void addEnemyEdge(
+      final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
+      final Site sourceVertex,
+      final Site targetVertex,
+      final River edge,
+      final int punter) {
+
+    // Look at source, and for each site
+    //  compute the min weight across all edges. This will be the the path closest to the site
+
+    Preconditions.checkState(edge.getMaxEnemyPathFromSites().size() == 0);
+
+    graphOfEnemyMoves.edgesOf(sourceVertex).stream().filter(river -> river.getClaimedBy() == punter).forEach(river -> {
+      river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
+        if (edge.getMaxEnemyPathFromSites().containsKey(site) && ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site))) {
+          edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+        }
+      });
+    });
+
+    graphOfEnemyMoves.edgesOf(targetVertex).stream().filter(river -> river.getClaimedBy() == punter).forEach(river -> {
+      river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
+        if (edge.getMaxEnemyPathFromSites().containsKey(site) && ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site))) {
+          edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+        }
+      });
+    });
+
+    // Check if the source is a mine
+    if (sourceVertex.isMine()) {
+      edge.getMaxEnemyPathFromSites().put(sourceVertex, 1);
+    }
+
+    // Check if the target is a mine
+    if (targetVertex.isMine()) {
+      edge.getMaxEnemyPathFromSites().put(targetVertex, 1);
+    }
+
+    // TODO:
+    // We have to propagate weights collected from rivers connected to source to all rivers connected to target (including source site)
+    // And vice versa
+
+    // Add enemy moves, and update the path length
+    graphOfEnemyMoves.addEdge(sourceVertex, targetVertex, edge);
+  }
+
   private void zeroClaimedEdges(
       final PreviousMoves previousMoves,
       final SimpleWeightedGraph<Site, River> graph,
@@ -337,8 +384,8 @@ public class GameLogic implements AutoCloseable {
              graph.removeEdge(edge);
 
              // but add this edge to the enemy moves
-             graphOfEnemyMoves.addEdge(sourceVertex, targetVertex, edge);
              System.out.println("Add enemy edge " + edge.toString());
+             addEnemyEdge(graphOfEnemyMoves, sourceVertex, targetVertex, edge, claim.getPunter());
            } else {
              // if we own the edge mark it as weight 0, it's free to use
              graph.setEdgeWeight(edge, 0.0);
