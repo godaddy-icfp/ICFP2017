@@ -43,17 +43,17 @@ public class GameLogic implements AutoCloseable {
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
   private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
-      Algorithms.AdjacentToMine, 1.0,
-      Algorithms.AdjacentToPath, 1.0,
-      Algorithms.ConnectedDecisionAlgorithm, 1.0,
-      Algorithms.MineToMine, 2.0,
-      Algorithms.MinimumSpanningTree, 1.0);
+      Algorithms.AdjacentToMine, 2.0,
+      Algorithms.AdjacentToPath, 0.0,
+      Algorithms.ConnectedDecisionAlgorithm, 0.0,
+      Algorithms.MineToMine, 3.0,
+      Algorithms.MinimumSpanningTree, 2.0);
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
-      Algorithms.AdjacentToMine, 0.0,
-      Algorithms.AdjacentToPath, 1.0,
-      Algorithms.ConnectedDecisionAlgorithm, 1.0,
-      Algorithms.MineToMine, 1.0,
-      Algorithms.MinimumSpanningTree, 1.0);
+      Algorithms.AdjacentToMine, 1.0,
+      Algorithms.AdjacentToPath, 2.0,
+      Algorithms.ConnectedDecisionAlgorithm, 2.0,
+      Algorithms.MineToMine, 3.0,
+      Algorithms.MinimumSpanningTree, 3.0);
 
   private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
 
@@ -65,6 +65,7 @@ public class GameLogic implements AutoCloseable {
     final State state = new State();
 
     state.setPunter(setup.getPunter());
+    state.setPunters(setup.getPunters());
 
     // respond
     SetupP2S response = new SetupP2S();
@@ -211,11 +212,10 @@ public class GameLogic implements AutoCloseable {
     } catch (InterruptedException e) {
       // ignore so we respond
     }
-// TODO: Basic stratecy is to use move count, but this state count is actuallhy the number of moves we have made, not the number of moves made in the game... Need to correct before doing strategy switch.
-//    if (currentState.getMoveCount() *  > currentState.getMines().size() &&
-//        currentState.getMoveCount() > 3) {
-//      strategyState = algorithmValuesProgress;
-//    }
+
+    if (currentState.getMoveCount() * currentState.getPunters() > currentState.getMines().size()) {
+      strategyState = algorithmValuesProgress;
+    }
 
     // Compute all the weight
     Optional<River> bestRiver = this.computeWeightOnGraph(currentState, strategyState);

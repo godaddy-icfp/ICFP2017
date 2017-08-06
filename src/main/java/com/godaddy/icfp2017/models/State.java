@@ -42,6 +42,9 @@ public class State {
   private int moveCount;
 
   @JsonProperty
+  private int punters;
+
+  @JsonProperty
   private ImmutableSet<Site> mines;
 
   private transient FloydWarshallShortestPaths<Site, River> shortestPaths;
@@ -92,5 +95,13 @@ public class State {
 
   public FloydWarshallShortestPaths<Site, River> getShortestPaths() {
     return shortestPaths;
+  }
+
+  public int getPunters() {
+    return punters;
+  }
+
+  public void setPunters(int punters) {
+    this.punters = punters;
   }
 }
