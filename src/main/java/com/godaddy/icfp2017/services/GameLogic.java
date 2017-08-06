@@ -72,13 +72,12 @@ public class GameLogic implements AutoCloseable {
     response.setReady(setup.getPunter());
     response.setState(state);
 
-    final Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>> triple =
-        buildGraphs(
-            setup);
-    state.setClaimedGraph(triple.right);
-    state.setGraph(triple.middle);
-    state.setMines(triple.left);
-    state.setShortestPaths(new FloydWarshallShortestPaths<>(triple.middle));
+    final GraphConstruction graphConstruction = buildGraphs(setup);
+    state.setClaimedGraph(graphConstruction.claimedGraph);
+    state.setGraph(graphConstruction.graph);
+    state.setMines(graphConstruction.mines);
+    state.setSiteToMap(graphConstruction.siteToMap);
+    state.setShortestPaths(new FloydWarshallShortestPaths<>(graphConstruction.graph));
 
     this.currentState = state;
 
@@ -143,9 +142,7 @@ public class GameLogic implements AutoCloseable {
         builder.build());
   }
 
-  private static Triple<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>, SimpleWeightedGraph<Site, River>>
-  buildGraphs(
-      final SetupS2P setup) {
+  private static GraphConstruction buildGraphs(final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
@@ -181,10 +178,11 @@ public class GameLogic implements AutoCloseable {
       }
     }
 
-    return Triple.of(
+    return new GraphConstruction(
         mines.stream().map(siteById::get).collect(toImmutableSet()),
         builder.build(),
-        myClaimedBuilder.build());
+        myClaimedBuilder.build(),
+        siteById);
   }
 
   public GameplayP2S move(final GameplayS2P move,
@@ -283,8 +281,8 @@ public class GameLogic implements AutoCloseable {
          .filter(m -> m.getClaim() != null)
          .map(Move::getClaim)
          .forEach(claim -> {
-           final Site sourceVertex = new Site(claim.getSource());
-           final Site targetVertex = new Site(claim.getTarget());
+           final Site sourceVertex = state.getSiteToMap().get(claim.getSource());
+           final Site targetVertex = state.getSiteToMap().get(claim.getTarget());
            final River edge = Optional.ofNullable(map.getEdge(sourceVertex, targetVertex))
                .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
            if (edge == null) {
