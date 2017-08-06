@@ -2,6 +2,7 @@ package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.algorithms.*;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -167,7 +168,11 @@ public class GameLogic implements AutoCloseable {
           siteById.get(river.getTarget()),
           river);
 
+      // TODO:
+      // Tim believes this doesn't make any sense because when we build a graph we should never
+      // have any rivers that are claimed
       if (river.getClaimedBy() == setup.getPunter()) {
+        Preconditions.checkState(false);
         myClaimedBuilder.addEdge(
             siteById.get(river.getSource()),
             siteById.get(river.getTarget()),
