@@ -3,6 +3,7 @@ package com.godaddy.icfp2017.services.algorithms;
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.State;
 
+import com.godaddy.icfp2017.services.Weights;
 import java.util.function.DoubleUnaryOperator;
 
 abstract public class BaseAlgorithm implements GraphAlgorithm {
@@ -25,6 +26,7 @@ abstract public class BaseAlgorithm implements GraphAlgorithm {
   public void run(Algorithms algorithm, final State state) {
     Long timer = System.currentTimeMillis();
     state.setLastTime(algorithm, 1000000L); // Set a sentinal value
+    state.getGraph().edgeSet().forEach(river -> setter.apply(river, Weights.Identity));
     iterate(state);
     state.setLastTime(algorithm, System.currentTimeMillis() - timer);
   }

@@ -241,12 +241,18 @@ public class GameLogic implements AutoCloseable {
   }
 
   public GraphAlgorithm getGraphAlgorithm(Algorithms algorithm) {
-    return algorithmCreators.get(algorithm).create(
+    AlgorithmFactory factory = algorithmCreators.get(algorithm);
+    GraphAlgorithm graphAlgorithm = null;
+    if (null != factory) {
+      graphAlgorithm = algorithmCreators.
+          get(algorithm).create(
           river -> river.getAlgorithmWeights().getOrDefault(algorithm, 1.0),
           (river, score) -> {
             river.getAlgorithmWeights().put(algorithm, score);
             return score;
           });
+    }
+    return graphAlgorithm;
   }
 
   private void runSpecificAlgorithm(final CountDownLatch completeLatch, final State state,

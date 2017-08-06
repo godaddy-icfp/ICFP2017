@@ -7,6 +7,8 @@ import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.Weights;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
 
@@ -55,13 +57,6 @@ public class GameLogicTests {
             }));
   }
 
-  private SetupS2P loadBigSetup() throws IOException {
-    final ClassLoader classLoader = GraphTests.class.getClassLoader();
-    final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleBigGame.json");
-
-    return JsonMapper.Instance.readValue(resourceAsStream, SetupS2P.class);
-  }
-
   @Test
   public void run_large_graph_test() throws IOException {
     Long timer = System.currentTimeMillis();
@@ -74,12 +69,6 @@ public class GameLogicTests {
     validateTimes(move.getState());
   }
 
-  private void validateSetupTime(Long timer) {
-    Long timeTotal = System.currentTimeMillis() - timer;
-    System.out.println("Setup for graph took " + timeTotal + "ms");
-    assertTrue(timeTotal < 500);
-  }
-
   @Test
   public void run_small_graph_test() throws IOException {
     Long timer = System.currentTimeMillis();
@@ -90,6 +79,33 @@ public class GameLogicTests {
     final GameplayP2S move = impl.move(loadMoves(setup), null);
 
     validateTimes(move.getState());
+  }
+
+  @Test
+  public void verify_weights_are_set() throws IOException {
+    GameLogic impl = new GameLogic();
+    final SetupP2S setup = impl.setup(loadBigSetup());
+    State state = setup.getState();
+    for (Algorithms algorithm : Algorithms.values()) {
+      final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(algorithm);
+      if (null != graphAlgorithm) {
+        // Remove all current weights
+        state.getGraph().edgeSet().forEach(river -> river.getAlgorithmWeights().clear());
+
+        graphAlgorithm.run(Algorithms.AdjacentToMine, state);
+
+        // Verify the algorithm sets a weight on each river explicitly
+        System.out.println("Validating weight settings present for " + algorithm.toString());
+        state.getGraph().edgeSet()
+            .forEach(river -> assertTrue(river.getAlgorithmWeights().size() > 0));
+      }
+    }
+  }
+
+  private void validateSetupTime(Long timer) {
+    Long timeTotal = System.currentTimeMillis() - timer;
+    System.out.println("Setup for graph took " + timeTotal + "ms");
+    assertTrue(timeTotal < 500);
   }
 
   private void validateTimes(State state) {
@@ -144,6 +160,13 @@ public class GameLogicTests {
       assertTrue(actualRankedPaths.size() == size);
 
     }
+
+  private SetupS2P loadBigSetup() throws IOException {
+    final ClassLoader classLoader = GraphTests.class.getClassLoader();
+    final InputStream resourceAsStream = classLoader.getResourceAsStream("SampleBigGame.json");
+
+    return JsonMapper.Instance.readValue(resourceAsStream, SetupS2P.class);
+  }
 
   private SetupS2P loadSetup() throws IOException {
 

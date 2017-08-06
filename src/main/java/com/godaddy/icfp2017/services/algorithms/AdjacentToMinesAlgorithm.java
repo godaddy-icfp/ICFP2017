@@ -18,21 +18,9 @@ final public class AdjacentToMinesAlgorithm extends BaseAlgorithm {
   public void iterate(final State state) {
     final SimpleWeightedGraph<Site, River> graph = state.getGraph();
     for (Site mine: state.getMines()) {
-      //boolean connected = false;
       for (River river : graph.edgesOf(mine)) {
         setter.apply(river, Weights.Max);
-/*        if (river.getClaimedBy() == state.getPunter()) {
-          connected = true;
-          break;
-        }*/
       }
-/*      Double mineWeight = Weights.Max;
-      if (connected) {
-        mineWeight = Weights.HighlyDesired;
-      }
-      for (River river : graph.edgesOf(mine)) {
-        setter.apply(river, mineWeight);
-      }*/
     }
   }
 }

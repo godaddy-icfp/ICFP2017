@@ -40,7 +40,7 @@ public class GraphTests {
 
     for (final River river : graph.edgeSet()) {
       final double edgeWeight = graph.getEdgeWeight(river);
-      assertThat(edgeWeight).isEqualTo(Weights.Identity);
+      assertThat(edgeWeight).isEqualTo(1.0);
     }
   }
 
