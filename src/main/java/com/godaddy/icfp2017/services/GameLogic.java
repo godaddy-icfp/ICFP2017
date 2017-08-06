@@ -38,7 +38,7 @@ public class GameLogic implements AutoCloseable {
   private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
       Algorithms.AdjacentToMine, 2.0,
       Algorithms.AdjacentToPath, 0.0,
-      Algorithms.ConnectedDecisionAlgorithm, 0.0,
+      Algorithms.ConnectedDecisionAlgorithm, 0.5,
       Algorithms.MineToMine, 3.0,
       Algorithms.MinimumSpanningTree, 2.0);
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
@@ -192,6 +192,7 @@ public class GameLogic implements AutoCloseable {
 
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
 
+    MineToMinePathCollector.collect(currentState);
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 

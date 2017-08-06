@@ -22,7 +22,8 @@ public class MineToMinePathCollector {
             .stream()
             // traverse a mine-to-mine path in one direction
             .filter(sink -> source.getId() < sink.getId())
-            .map(sink -> shortestPath.getPath(source, sink)))
+            .map(sink -> shortestPath.getPath(source, sink))
+            .filter(path -> path != null))
         .collect(ImmutableList.toImmutableList());
 
     state.setMineToMinePaths(paths);
