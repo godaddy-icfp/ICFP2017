@@ -197,7 +197,7 @@ public class GameLogic implements AutoCloseable {
 
     final State currentState = Optional.ofNullable(move.getPreviousState())
                                        .orElseGet(() -> Optional.ofNullable(this.currentState)
-                                                                .orElseGet(State::new));
+                                                                .orElseThrow(IllegalStateException::new));
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState.getGraphOfEnemyMoves(), currentState);
 
     analyzers.keySet().forEach(key -> {
