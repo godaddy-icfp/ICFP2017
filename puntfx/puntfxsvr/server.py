@@ -158,7 +158,6 @@ gevent.spawn(main_game)
 
 def receive_tcp_json(player_id):
     raw = players[player_id]["socket_reader"].readline()
-    print(raw)
     n, message = raw.split(":", 1)
     return json.loads(message)
 

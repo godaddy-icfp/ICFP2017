@@ -39,6 +39,24 @@ java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar -mode=online -host=punter.inf
 
 Show replayer/index.html in a browser, paste the log in the replay information box and press the replay button.
 
+## Running a server locally
+
+Use python
+pip install flask
+pip install gevent
+pip install flask-sockets
+
+cd puntfx/puntfxsvr
+python server.py
+
+NOTES:
+Only supports sample.json right now. I'll add more maps on.
+
+## Running a client and connecting locally
+Load in your browser puntfx/index.html
+It is already configured to connect to localhost:5000
+Ignore the port for the game - the local server supports only one game
+
 ## Overview notes
 
 ![Notes](Notes.png)
