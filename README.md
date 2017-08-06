@@ -41,13 +41,19 @@ Show replayer/index.html in a browser, paste the log in the replay information b
 
 ## Running a server locally
 
-Use python
+Use python 2.7
+
+```bash
+virtualenv -p /usr/bin/python2.7  ~/Projects/PythonEnvs/Python2
+source ~/Projects/PythonEnvs/Python2
 pip install flask
 pip install gevent
 pip install flask-sockets
+pip install six
 
 cd puntfx/puntfxsvr
 python server.py
+```
 
 NOTES:
 Only supports sample.json right now. I'll add more maps on.
