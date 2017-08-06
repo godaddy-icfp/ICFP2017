@@ -5,6 +5,7 @@ import threading
 import json
 import gevent
 import gevent.lock
+import gevent.queue
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -15,6 +16,12 @@ max_players = games[selected_game]
 
 with open(selected_game) as data_file:
     map_data = json.load(data_file)
+    # normalize the rivers
+    for i in xrange(len(map_data["rivers"])):
+        if (map_data["rivers"][i]["source"] > map_data["rivers"][i]["target"]):
+            temp = map_data["rivers"][i]["source"]
+            map_data["rivers"][i]["source"] = map_data["rivers"][i]["target"]
+            map_data["rivers"][i]["target"] = temp
 
 class CountDownLatch(object):
     def __init__(self, count=1):
@@ -47,15 +54,18 @@ def send_json(player_id, json_object):
     players[player_id]["socket"].send(str(len(message)) + ":" + message)
 
 def receive_json(player_id):
-    message_length, message = players[player_id]["socket"].receive().split(":")
-    return json.load(message)
+    message_length, message = players[player_id]["socket"].receive().split(":", 1)
+    return json.loads(message)
 
 def main_game():
     global players
     global sync_lock
 
     print("waiting for " + str(games[selected_game]) + " players")
-    latch.await()
+    #latch.await()
+    while(len(players) < max_players):
+        gevent.sleep(1)
+
     print("game started")
 
     # Setup protocol
@@ -75,19 +85,19 @@ def main_game():
 
     # play loop
 
-    while(True):
-        moves = []
-        for i in xrange(max_players):
-            moves.append({"pass" : {"punter" : i}})
+    moves = []
+    for i in xrange(max_players):
+        moves.append({"pass" : {"punter" : i}})
 
+    while(True):
         for i in xrange(max_players):
             move = {"move" : { "moves" : moves }}
-            send_json(i, move)
-            response = receive_json(i)
-
-
-
-    moves = []
+            print("sending move to " + str(i) + " " + json.dumps(move))
+            players[i]["to_client_queue"].put(move)
+            move = players[i]["from_client_queue"].get()
+            # TODO validate move
+            moves.append(move)
+            moves = moves[1:]
 
 @sockets.route('/')
 def echo_socket(ws):
@@ -96,10 +106,15 @@ def echo_socket(ws):
     global players
     global sync_lock
     global end_lock
+    to_client_queue = gevent.queue.Queue()
+    from_client_queue = gevent.queue.Queue()
+
+    with sync_lock:
+        player_id = current_player_id
+        current_player_id = current_player_id + 1
+
     while not ws.closed:
-
         # if this is json "me", it's a client, otherwise its a JS client
-
         message = ws.receive()
         try:
             message_json = json.load(message)
@@ -114,21 +129,28 @@ def echo_socket(ws):
                     "host" : host,
                     "port" : port,
                     "name" : name,
-                    "punter_id" : current_player_id,
-                    "socket" : ws
+                    "punter_id" : player_id,
+                    "socket" : ws,
+                    "to_client_queue" : to_client_queue,
+                    "from_client_queue" : from_client_queue
                     }
                 players.append(player)
-                current_player_id = current_player_id + 1
 
             print("JS client - host: " + host + " port: " + port + " name: " + name)
             ws.send(message)
 
-        latch.count_down()
+        #latch.count_down()
+
+        # Loop the queue
+        for json_object in to_client_queue:
+            send_json(player_id, json_object)
+            response = receive_json(player_id)
+            from_client_queue.put(response)
 
 # Start the bg thread
-#gevent.spawn(main_game)
-game_thread = threading.Thread(target=main_game)
-game_thread.start()
+gevent.spawn(main_game)
+#game_thread = threading.Thread(target=main_game)
+#game_thread.start()
 
 @app.route('/')
 def hello():
