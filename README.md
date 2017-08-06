@@ -23,6 +23,14 @@ cat sampleSetupInput.json | java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar
 java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar -mode=online -host=punter.inf.ed.ac.uk -port=9004 
 ```
 
+## Capturing a log
+
+```bash
+java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar -mode=online -host=punter.inf.ed.ac.uk -port=9009 -capture
+```
+
+You can copy in either the debug logs or the capture logs at the end
+
 ## Overview notes
 
 ![Notes](Notes.png)
