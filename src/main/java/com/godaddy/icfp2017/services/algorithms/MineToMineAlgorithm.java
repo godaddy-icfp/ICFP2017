@@ -22,7 +22,7 @@ final public class MineToMineAlgorithm extends BaseAlgorithm {
     final double l0 = optimalLength * optimalLength;
     final double d0 = diameter * diameter;
     final double percentage = Math.min(smoothedOwnership * (l0 / d0), 1.0);
-    return 1.0 + (percentage * (Weights.HighlyDesired - 1.0));
+    return Weights.Identity + (percentage * (Weights.HighlyDesired - Weights.Identity));
   }
 
   @Override
