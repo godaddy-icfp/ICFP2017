@@ -16,8 +16,8 @@ abstract public class BaseAlgorithm implements GraphAlgorithm {
     this.setter = setter;
   }
 
-  final void alter(final River river, final DoubleUnaryOperator f) {
-    setter.apply(river, f.applyAsDouble(getter.apply(river)));
+  final double alter(final River river, final DoubleUnaryOperator f) {
+    return setter.apply(river, f.applyAsDouble(getter.apply(river)));
   }
 
   public abstract void iterate(State state);

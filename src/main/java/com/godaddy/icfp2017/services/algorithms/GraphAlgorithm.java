@@ -11,7 +11,7 @@ public interface GraphAlgorithm {
 
   @FunctionalInterface
   interface Setter {
-    void apply(River river, double score);
+    double apply(River river, double score);
   }
 
   void run(Algorithms algorithm, final State state);
