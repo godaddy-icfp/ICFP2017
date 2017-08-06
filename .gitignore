@@ -23,6 +23,7 @@ out/
 
 .DS_Store
 .gradle/
+!gradle/wrapper/*
 build/
 classes/
 *.iml
