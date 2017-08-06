@@ -81,16 +81,16 @@ public class GameLogic implements AutoCloseable {
     executorService.shutdown();
   }
 
-  private River computeWeightOnGraph(
+  private Optional<River> computeWeightOnGraph(
       final State state,
       final ImmutableMap<Algorithms, Double> algorithmValues) {
     // Pick any river
     River bestRiver = null;
-    Double bestWeight = 0.0;
+    double bestWeight = 0.0;
 
     for (River river : state.getGraph().edgeSet()) {
-      Double weight = river.getAlgorithmWeights().entrySet().stream()
-          .map(e -> e.getValue() * algorithmValues.get(e.getKey()))
+      double weight = river.getAlgorithmWeights().entrySet().stream()
+          .mapToDouble(e -> e.getValue() * algorithmValues.get(e.getKey()))
           .reduce(1.0, (x, y) -> x * y);
       state.getGraph().setEdgeWeight(river, weight);
       if (!river.isClaimed() && (weight > bestWeight)) {
@@ -98,7 +98,10 @@ public class GameLogic implements AutoCloseable {
         bestRiver = river;
       }
     }
-    return bestRiver;
+
+    // sometimes we get called and don't produce a river (because they all score 0.0)
+    // while we can do a better job, let's just send a pass for now to avoid crashing
+    return Optional.ofNullable(bestRiver);
   }
 
   static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(
@@ -202,27 +205,39 @@ public class GameLogic implements AutoCloseable {
     }
 
     // Compute all the weight
-    River bestRiver = this.computeWeightOnGraph(currentState, algorithmValues);
-
-    Claim claim = new Claim();
-    claim.setPunter(currentState.getPunter());
-    claim.setTarget(bestRiver.getTarget());
-    claim.setSource(bestRiver.getSource());
-    bestRiver.setClaimedBy(currentState.getPunter());
+    Optional<River> bestRiver = this.computeWeightOnGraph(currentState, algorithmValues);
 
     // initialize the response
-    final GameplayP2S response = new GameplayP2S();
-//    response.setPass(pass); // todo change this to setClaim
-    response.setState(currentState);
-    response.setClaim(claim);
+    final GameplayP2S response = bestRiver
+        .map(river -> {
+          final GameplayP2S r = new GameplayP2S();
+          Claim claim = new Claim();
+          claim.setPunter(currentState.getPunter());
+          claim.setTarget(river.getTarget());
+          claim.setSource(river.getSource());
+          river.setClaimedBy(currentState.getPunter());
+          r.setClaim(claim);
+          return r;
+        })
+        .orElseGet(() -> {
+          final GameplayP2S r = new GameplayP2S();
+          r.setPass(pass);
+          return r;
+        });
+
     currentState.setMoveCount(currentState.getMoveCount() + 1);
+    response.setState(currentState);
+
     return response;
   }
 
   public GraphAlgorithm getGraphAlgorithm(Algorithms algorithm) {
     return algorithmCreators.get(algorithm).create(
           river -> river.getAlgorithmWeights().get(algorithm),
-          (river, score) -> river.getAlgorithmWeights().put(algorithm, score));
+          (river, score) -> {
+            river.getAlgorithmWeights().put(algorithm, score);
+            return score;
+          });
   }
 
   private void runSpecificAlgorithm(final CountDownLatch completeLatch, final State state,
