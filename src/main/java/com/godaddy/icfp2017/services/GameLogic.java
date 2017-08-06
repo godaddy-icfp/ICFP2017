@@ -79,6 +79,7 @@ public class GameLogic implements AutoCloseable {
 
     final GraphConstruction graphConstruction = buildGraphs(setup);
     state.setGraph(graphConstruction.graph);
+    state.setGraphOfEnemyMoves(graphConstruction.graphOfEnemyMoves);
     state.setMines(graphConstruction.mines);
     state.setSiteToMap(graphConstruction.siteToMap);
     state.setShortestPaths(new FloydWarshallShortestPaths<>(graphConstruction.graph));
@@ -162,9 +163,13 @@ public class GameLogic implements AutoCloseable {
     final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builder =
         SimpleWeightedGraph.builder(new LambdaEdgeFactory());
 
+    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builderOfEnemyMoves =
+        SimpleWeightedGraph.builder(new LambdaEdgeFactory());
+
     for (final Site site : sites) {
       site.setMine(mines.contains(site.getId()));
       builder.addVertex(site);
+      builderOfEnemyMoves.addVertex(site);
     }
 
     for (final River river : rivers) {
@@ -177,6 +182,7 @@ public class GameLogic implements AutoCloseable {
     return new GraphConstruction(
         mines.stream().map(siteById::get).collect(toImmutableSet()),
         builder.build(),
+        builderOfEnemyMoves.build(),
         siteById);
   }
 
@@ -188,7 +194,7 @@ public class GameLogic implements AutoCloseable {
                                        .orElseGet(() -> Optional.ofNullable(this.currentState)
                                                                 .orElseGet(State::new));
 
-    zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
+    zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState.getGraphOfEnemyMoves(), currentState);
 
     MineToMinePathCollector.collect(currentState);
 
@@ -288,7 +294,8 @@ public class GameLogic implements AutoCloseable {
 
   private void zeroClaimedEdges(
       final PreviousMoves previousMoves,
-      final SimpleWeightedGraph<Site, River> map,
+      final SimpleWeightedGraph<Site, River> graph,
+      final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
       final State state) {
 
     final List<Move> moves = previousMoves.getMoves();
@@ -298,8 +305,8 @@ public class GameLogic implements AutoCloseable {
          .forEach(claim -> {
            final Site sourceVertex = state.getSiteToMap().get(claim.getSource());
            final Site targetVertex = state.getSiteToMap().get(claim.getTarget());
-           final River edge = Optional.ofNullable(map.getEdge(sourceVertex, targetVertex))
-                                      .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
+           final River edge = Optional.ofNullable(graph.getEdge(sourceVertex, targetVertex))
+               .orElseGet(() -> graph.getEdge(targetVertex, sourceVertex));
            if (edge == null) {
              return;
            }
@@ -309,11 +316,14 @@ public class GameLogic implements AutoCloseable {
            if (state.getPunter() != claim.getPunter()) {
              // remove this edge entirely from the graph so we can avoid
              // traversing it during any analysis passes
-             map.removeEdge(edge);
-           }
-           else {
+             graph.removeEdge(edge);
+
+             // but add this edge to the enemy moves
+             graphOfEnemyMoves.addEdge(sourceVertex, targetVertex, edge);
+             System.out.println("Add enemy edge " + edge.toString());
+           } else {
              // if we own the edge mark it as weight 0, it's free to use
-             map.setEdgeWeight(edge, 0.0);
+             graph.setEdgeWeight(edge, 0.0);
            }
          });
   }

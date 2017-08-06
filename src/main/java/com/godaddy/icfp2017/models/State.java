@@ -25,6 +25,8 @@ public class State {
   @JsonProperty
   private SimpleWeightedGraph<Site, River> graph;
 
+  @JsonProperty
+  private SimpleWeightedGraph<Site, River> graphOfEnemyMoves;
 
   private ImmutableMap<Integer, Site> siteToMap;
 
@@ -73,6 +75,13 @@ public class State {
   public void setGraph(final SimpleWeightedGraph<Site, River> graph) {
     this.graph = graph;
   }
+
+  public SimpleWeightedGraph<Site, River> getGraphOfEnemyMoves() {
+    return graphOfEnemyMoves;
+  }
+
+  public void setGraphOfEnemyMoves(final SimpleWeightedGraph<Site, River> graph) { this.graphOfEnemyMoves = graph; }
+
 
   public int getMoveCount() {
     return moveCount;

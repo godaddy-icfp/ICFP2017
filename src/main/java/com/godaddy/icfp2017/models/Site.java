@@ -39,7 +39,7 @@ public class Site implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(id, isMine);
+    return Objects.hashCode(id);
   }
 
   @Override
