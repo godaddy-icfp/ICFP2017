@@ -63,6 +63,11 @@ public class GameDriver implements AutoCloseable {
       }
 
       @Override
+      public void debug(final String s) {
+        debugStream.println(s);
+      }
+
+      @Override
       public SetupP2S setup(final SetupS2P message) {
         return gameLogic.setup(message);
       }
