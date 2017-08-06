@@ -1,4 +1,4 @@
-package com.godaddy.icfp2017.services;
+package com.godaddy.icfp2017.services.analysis;
 
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
@@ -7,12 +7,10 @@ import com.google.common.collect.ImmutableList;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 
-public class MineToMinePathCollector {
+public class MineToMinePathAnalyzer extends BaseAnalyzer {
 
-  public static void collect(final State state) {
-    if (state == null)
-      return;
-
+  @Override
+  public void analyze(State state) {
     DijkstraShortestPath<Site, River> shortestPath = new DijkstraShortestPath<>(state.getGraph());
     final ImmutableList<GraphPath<Site, River>> paths = state
         .getMines()
@@ -27,6 +25,5 @@ public class MineToMinePathCollector {
         .collect(ImmutableList.toImmutableList());
 
     state.setMineToMinePaths(paths);
-
   }
 }

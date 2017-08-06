@@ -5,6 +5,7 @@ import com.godaddy.icfp2017.services.algorithms.*;
 import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
 import com.godaddy.icfp2017.services.analysis.Analyzers;
 import com.godaddy.icfp2017.services.analysis.ConnectedRiverAnalyzer;
+import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -31,14 +32,15 @@ public class GameLogic implements AutoCloseable {
 
   private final ImmutableMap<Analyzers, GraphAnalyzer> analyzers =
       ImmutableMap.of(
-          Analyzers.Connected, new ConnectedRiverAnalyzer()
+          Analyzers.Connected, new ConnectedRiverAnalyzer(),
+          Analyzers.MineToMinePath, new MineToMinePathAnalyzer()
       );
 
   private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
-          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
+          Algorithms.ConnectedDecision, ConnectedDecisionAlgorithm::new,
           Algorithms.MineToMine, MineToMineAlgorithm::new
           //          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
                      );
@@ -48,14 +50,14 @@ public class GameLogic implements AutoCloseable {
   private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
       Algorithms.AdjacentToMine, 2.0,
       Algorithms.AdjacentToPath, 0.5,
-      Algorithms.ConnectedDecisionAlgorithm, 0.5,
+      Algorithms.ConnectedDecision, 0.5,
       Algorithms.MineToMine, 3.0,
       Algorithms.MinimumSpanningTree, 2.0);
 
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
       Algorithms.AdjacentToMine, 1.0,
       Algorithms.AdjacentToPath, 1.0,
-      Algorithms.ConnectedDecisionAlgorithm, 0.5,
+      Algorithms.ConnectedDecision, 0.5,
       Algorithms.MineToMine, 3.0,
       Algorithms.MinimumSpanningTree, 3.0);
 
@@ -84,7 +86,7 @@ public class GameLogic implements AutoCloseable {
     state.setSiteToMap(graphConstruction.siteToMap);
     state.setShortestPaths(new FloydWarshallShortestPaths<>(graphConstruction.graph));
 
-    MineToMinePathCollector.collect(state);
+    new MineToMinePathAnalyzer().analyze(state);
     RankedPathsCalculator calculator = new RankedPathsCalculator(state);
     state.setRankedPaths(calculator.calculate());
 
@@ -186,28 +188,28 @@ public class GameLogic implements AutoCloseable {
         siteById);
   }
 
+  private final Long MAX_TURN_TIME = 900L;
   public GameplayP2S move(
       final GameplayS2P move) {
     // load previous state
 
+    Long startTime = System.currentTimeMillis();
+
     final State currentState = Optional.ofNullable(move.getPreviousState())
                                        .orElseGet(() -> Optional.ofNullable(this.currentState)
-                                                                .orElseGet(State::new));
-
+                                                                .orElseThrow(IllegalStateException::new));
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState.getGraphOfEnemyMoves(), currentState);
 
-    MineToMinePathCollector.collect(currentState);
-
     analyzers.keySet().forEach(key -> {
-      GraphAnalyzer analyzer = analyzers.get(key);
-      analyzer.run(key.toString(), currentState);
+      analyzers.get(key).run(key.toString(), currentState);
     });
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
+    Long timeAvailable = MAX_TURN_TIME - (System.currentTimeMillis() - startTime);
     runAllAlgorithms(completeLatch, currentState);
     try {
-      final boolean allCompleted = completeLatch.await(500, TimeUnit.MILLISECONDS);
+      final boolean allCompleted = completeLatch.await(timeAvailable, TimeUnit.MILLISECONDS);
       if (!allCompleted) {
         debugStream.println("Some algorithms didn't finish");
       }

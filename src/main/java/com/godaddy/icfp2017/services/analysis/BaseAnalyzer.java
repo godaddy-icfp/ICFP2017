@@ -10,8 +10,9 @@ public abstract class BaseAnalyzer implements GraphAnalyzer {
 
   public void run(String algorithm, final State state) {
     Long timer = System.currentTimeMillis();
-    state.setLastTime(algorithm, 1000000L); // Set a sentinel value
+    String timeKey = "Analyzer:" + algorithm;
+    state.setLastTime(timeKey, 1000000L); // Set a sentinel value
     analyze(state);
-    state.setLastTime(algorithm, System.currentTimeMillis() - timer);
+    state.setLastTime(timeKey, System.currentTimeMillis() - timer);
   }
 }
