@@ -14,7 +14,7 @@ import com.godaddy.icfp2017.models.SetupS2P;
 import java.io.IOException;
 import java.util.function.Function;
 
-final class StateMachine {
+final class StateMachine implements AutoCloseable {
   interface Handler<T> {
     void capture(final ICFPMessage message);
     void debug(String s);
@@ -34,6 +34,11 @@ final class StateMachine {
       final FrameWriter outputStream) throws IOException {
     this.input = inputStream;
     this.output = outputStream;
+  }
+
+  @Override
+  public void close() throws Exception {
+    input.close();
   }
 
   private void send(final Object message) throws IOException {
