@@ -15,6 +15,8 @@ public class Site implements Serializable {
   private double x;
   private double y;
 
+  private int ownClaimCount;
+
   public Site() {
   }
 
@@ -67,5 +69,13 @@ public class Site implements Serializable {
 
   public void setX(final double x) {
     this.x = x;
+  }
+
+  public int getOwnClaimCount() {
+    return ownClaimCount;
+  }
+
+  public void setOwnClaimCount(int ownClaimCount) {
+    this.ownClaimCount = ownClaimCount;
   }
 }

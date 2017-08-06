@@ -18,27 +18,23 @@ public class AdjacentToPathAlgorithm extends BaseAlgorithm {
   @Override
   public void iterate(final State state) {
     final SimpleWeightedGraph<Site, River> graph = state.getGraph();
+    graph.vertexSet().forEach(site -> {
+      int count = 0;
+      for (River river: graph.edgesOf(site)) {
+        if (river.getClaimedBy() == state.getPunter()) {
+          count++;
+        }
+      }
+      site.setOwnClaimCount(count);
+    });
     graph.edgeSet()
               .forEach(river -> {
-                boolean sourceConnected = false;
-                boolean targetConnected = false;
+                int sourceConnectedCount = graph.getEdgeSource(river).getOwnClaimCount();
+                int targetConnectedCount = graph.getEdgeTarget(river).getOwnClaimCount();
 
-                Site source = graph.getEdgeSource(river);
-                for (River sourceRiver : graph.edgesOf(source)) {
-                  if (sourceRiver.getClaimedBy() == state.getPunter()) {
-                    sourceConnected = true;
-                  }
-                }
-
-                Site target = graph.getEdgeTarget(river);
-                for (River targetRiver : graph.edgesOf(target)) {
-                  if (targetRiver.getClaimedBy() == state.getPunter()) {
-                    targetConnected = true;
-                  }
-                }
-
-                if (sourceConnected ^ targetConnected) {
-                  setter.apply(river, Weights.Desired);
+                if (sourceConnectedCount + targetConnectedCount == 1 &&
+                    (sourceConnectedCount == 0 || targetConnectedCount == 0)){
+                  setter.apply(river, Weights.HighlyDesired);
                 }
               });
   }

@@ -43,11 +43,11 @@ public class GameLogic implements AutoCloseable {
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
   private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
-      Algorithms.AdjacentToMine, 2.0,
-      Algorithms.AdjacentToPath, 0.0,
-      Algorithms.ConnectedDecisionAlgorithm, 0.0,
+      Algorithms.AdjacentToMine, 1.0,
+      Algorithms.AdjacentToPath, 1.0,
+      Algorithms.ConnectedDecisionAlgorithm, 1.0,
       Algorithms.MineToMine, 2.0,
-      Algorithms.MinimumSpanningTree, 0.0);
+      Algorithms.MinimumSpanningTree, 1.0);
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
       Algorithms.AdjacentToMine, 0.0,
       Algorithms.AdjacentToPath, 1.0,
@@ -211,10 +211,11 @@ public class GameLogic implements AutoCloseable {
     } catch (InterruptedException e) {
       // ignore so we respond
     }
-
-    if (currentState.getMoveCount() > currentState.getMines().size()) {
-      strategyState = algorithmValuesProgress;
-    }
+// TODO: Basic stratecy is to use move count, but this state count is actuallhy the number of moves we have made, not the number of moves made in the game... Need to correct before doing strategy switch.
+//    if (currentState.getMoveCount() *  > currentState.getMines().size() &&
+//        currentState.getMoveCount() > 3) {
+//      strategyState = algorithmValuesProgress;
+//    }
 
     // Compute all the weight
     Optional<River> bestRiver = this.computeWeightOnGraph(currentState, strategyState);

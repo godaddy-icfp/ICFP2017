@@ -28,7 +28,7 @@ final public class AdjacentToMinesAlgorithm extends BaseAlgorithm {
       }
       Double mineWeight = Weights.Max;
       if (connected) {
-        mineWeight = Weights.Desired;
+        mineWeight = Weights.HighlyDesired;
       }
       for (River river : graph.edgesOf(mine)) {
         setter.apply(river, mineWeight);
