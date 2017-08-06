@@ -1,11 +1,11 @@
 package com.godaddy.icfp2017.services.algorithms;
 
+import com.godaddy.icfp2017.models.Path;
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.Weights;
 import com.google.common.base.Preconditions;
-import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 
 final public class MineToMineAlgorithm extends BaseAlgorithm {
@@ -29,22 +29,16 @@ final public class MineToMineAlgorithm extends BaseAlgorithm {
   public void iterate(final State state) {
     final FloydWarshallShortestPaths<Site, River> shortestPaths = state.getShortestPaths();
 
+    Path highestValuePath = state.getRankedPaths().first();
+
     // the longest shortest path in the graph
-    final double diameter = shortestPaths.getDiameter();
+    final double diameter = highestValuePath.getLength();
 
-    for (final Site source : state.getMines()) {
-      for (final Site sink : state.getMines()) {
-        if (source.getId() <= sink.getId()) {
-          // traverse a mine-to-mine path in one direction
-          continue;
-        }
-
-        final GraphPath<Site, River> path = shortestPaths.getPaths(source).getPath(sink);
-        final double pathWeight = pathWeight(path.getWeight(), path.getLength(), diameter);
-        for (final River river : path.getEdgeList()) {
-          alter(river, value -> pathWeight * Math.max(1.0, value));
-        }
+    state.getMineToMinePaths().forEach(path -> {
+      final double pathWeight = pathWeight(path.getWeight(), path.getLength(), diameter);
+      for (final River river : path.getEdgeList()) {
+        alter(river, value -> pathWeight * Math.max(1.0, value));
       }
-    }
+    });
   }
 }

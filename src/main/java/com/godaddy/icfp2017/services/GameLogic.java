@@ -1,14 +1,7 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
-import com.godaddy.icfp2017.services.algorithms.AdjacentToMinesAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AdjacentToPathAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AlgorithmFactory;
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
-import com.godaddy.icfp2017.services.algorithms.ConnectedDecisionAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.MineToMineAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.MinimumSpanningTreeAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.*;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -35,8 +28,8 @@ public class GameLogic implements AutoCloseable {
       ImmutableMap.of(
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
-          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new
-//          Algorithms.MineToMine, MineToMineAlgorithm::new,
+          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
+          Algorithms.MineToMine, MineToMineAlgorithm::new
 //          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
       );
 
@@ -78,6 +71,10 @@ public class GameLogic implements AutoCloseable {
     state.setMines(graphConstruction.mines);
     state.setSiteToMap(graphConstruction.siteToMap);
     state.setShortestPaths(new FloydWarshallShortestPaths<>(graphConstruction.graph));
+
+    MineToMinePathCollector.collect(state);
+    RankedPathsCalculator calculator = new RankedPathsCalculator(state);
+    state.setRankedPaths(calculator.calculate());
 
     this.currentState = state;
 

@@ -6,11 +6,15 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.godaddy.icfp2017.models.serialization.BinaryStateDeserializer;
 import com.godaddy.icfp2017.models.serialization.BinaryStateSerializer;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.HashMap;
+import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
+
+import java.util.HashMap;
+import java.util.SortedSet;
 
 @JsonSerialize(using = BinaryStateSerializer.class)
 @JsonDeserialize(using = BinaryStateDeserializer.class)
@@ -50,6 +54,10 @@ public class State {
   private ImmutableSet<Site> mines;
 
   private transient FloydWarshallShortestPaths<Site, River> shortestPaths;
+
+  private SortedSet<Path> rankedPaths;
+
+  private ImmutableList<GraphPath<Site, River>> mineToMinePaths;
 
   public int getPunter() {
     return punter;
@@ -99,12 +107,24 @@ public class State {
     return shortestPaths;
   }
 
+  public SortedSet<Path> getRankedPaths() { return rankedPaths; }
+
+  public void setRankedPaths(final SortedSet<Path> rankedPaths) {
+    this.rankedPaths = rankedPaths;
+  }
+
   public int getPunters() {
     return punters;
   }
 
   public void setPunters(int punters) {
     this.punters = punters;
+  }
+
+  public ImmutableList<GraphPath<Site, River>> getMineToMinePaths() { return mineToMinePaths; }
+
+  public void setMineToMinePaths(final ImmutableList<GraphPath<Site, River>> paths) {
+    this.mineToMinePaths = paths;
   }
 
   public void setSiteToMap(final ImmutableMap<Integer, Site> siteToMap) {

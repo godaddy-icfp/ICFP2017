@@ -1,27 +1,23 @@
 package com.godaddy.icfp2017;
 
-import static org.testng.AssertJUnit.assertNotNull;
-import static org.testng.AssertJUnit.assertTrue;
-
-import com.godaddy.icfp2017.models.GameplayP2S;
-import com.godaddy.icfp2017.models.GameplayS2P;
-import com.godaddy.icfp2017.models.River;
-import com.godaddy.icfp2017.models.SetupP2S;
-import com.godaddy.icfp2017.models.SetupS2P;
-import com.godaddy.icfp2017.models.Site;
-import com.godaddy.icfp2017.models.State;
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.GraphTests;
 import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.Weights;
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
-import com.google.common.collect.ImmutableList;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertTrue;
 
 public class GameLogicTests {
 
@@ -120,6 +116,34 @@ public class GameLogicTests {
 
     assertNotNull(state);
   }
+
+    @Test
+    public void run_game_and_ensure_ranked_paths_are_calculated() throws IOException {
+      GameLogic impl = new GameLogic();
+      final SetupP2S setup = impl.setup(loadSetup());
+      SortedSet<Path> actualRankedPaths = setup.getState().getRankedPaths();
+      Set<Path> expectedRankedPaths = new HashSet<>();
+      //expectedRankedPaths.add(new Path(5, 1, 8));
+      expectedRankedPaths.add(new Path(1, 5, 8, 2));
+/*      expectedRankedPaths.add(new Path(5, 2, 4));
+      expectedRankedPaths.add(new Path(5, 0, 4));
+      expectedRankedPaths.add(new Path(1, 6, 4));
+      expectedRankedPaths.add(new Path(1, 4, 4));
+      expectedRankedPaths.add(new Path(5, 7, 1));
+      expectedRankedPaths.add(new Path(5, 6, 1));
+      expectedRankedPaths.add(new Path(5, 4, 1));
+      expectedRankedPaths.add(new Path(5, 3, 1));
+      expectedRankedPaths.add(new Path(1, 7, 1));
+      expectedRankedPaths.add(new Path(1, 3, 1));
+      expectedRankedPaths.add(new Path(1, 2, 1));
+      expectedRankedPaths.add(new Path(1, 0, 1));*/
+
+      int size = actualRankedPaths.size();
+      assertTrue(size == expectedRankedPaths.size());
+      actualRankedPaths.addAll(expectedRankedPaths);
+      assertTrue(actualRankedPaths.size() == size);
+
+    }
 
   private SetupS2P loadSetup() throws IOException {
 
