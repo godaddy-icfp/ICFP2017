@@ -119,7 +119,20 @@ def main_game():
 
             num_moves += 1
             if (num_moves >= max_num_moves):
-                return None
+                break
+
+        if (num_moves >= max_num_moves):
+            break
+
+    # Send the end game
+
+    scores = []
+    for i in six.moves.range(max_players):
+        scores.append({"punter" : players[i]["punter_id"], "score" : 100 })
+
+    for i in six.moves.range(max_players):
+        end_move = { "stop" : { "moves" : moves, "scores" : scores } }
+        players[i]["to_client_queue"].put(end_move)
 
     print("#########")
     print("GAME OVER")
