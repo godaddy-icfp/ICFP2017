@@ -11,8 +11,9 @@ import six.moves
 app = Flask(__name__)
 sockets = Sockets(app)
 
-games = {"sample.json" : 2}
-selected_game = "sample.json"
+games = {"sample.json" : 2,
+         "lambda.json" : 3}
+selected_game = "lambda.json"
 max_players = games[selected_game]
 
 with open(selected_game) as data_file:
@@ -92,16 +93,21 @@ def main_game():
         moves.append({"pass" : {"punter" : i}})
 
     while(True):
+        print("")
+        print("###### GAME LOOP #########")
+        print("")
         for i in six.moves.range(max_players):
             move = {"move" : { "moves" : moves }}
-            # print("sending move to " + str(i) + " " + json.dumps(move))
+            print("Sending move: " + players[i]["name"] + " " + json.dumps(move))
             players[i]["to_client_queue"].put(move)
             move = players[i]["from_client_queue"].get()
             # TODO validate move
             # Remove state
             move.pop('state', None)
+            print("Received moved: " + players[i]["name"] + " " + json.dumps(move))
             moves.append(move)
             moves = moves[1:]
+            print("")
 
 @sockets.route('/')
 def echo_socket(ws):
@@ -196,7 +202,6 @@ def tcp_handler(socket, address):
     send_tcp_json(player_id, {"you" : setup_json["me"]})
 
     for json_object in to_client_queue:
-        print("sending " + json.dumps(json_object))
         send_tcp_json(player_id, json_object)
         response = receive_tcp_json(player_id)
         # print("read " + json.dumps(response))
