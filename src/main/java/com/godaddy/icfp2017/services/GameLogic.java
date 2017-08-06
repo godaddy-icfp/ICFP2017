@@ -35,9 +35,10 @@ public class GameLogic implements AutoCloseable {
       ImmutableMap.of(
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
-          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
-          Algorithms.MineToMine, MineToMineAlgorithm::new,
-          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new);
+          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new
+//          Algorithms.MineToMine, MineToMineAlgorithm::new,
+//          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
+      );
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move

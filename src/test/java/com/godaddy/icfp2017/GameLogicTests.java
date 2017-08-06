@@ -75,12 +75,21 @@ public class GameLogicTests {
     validateTimes(move.getState());
   }
 
+  @Test
+  public void run_small_graph_test() throws IOException {
+    GameLogic impl = new GameLogic();
+    final SetupP2S setup = impl.setup(loadSetup());
+    final GameplayP2S move = impl.move(loadMoves(setup), null);
+
+    validateTimes(move.getState());
+  }
+
   private void validateTimes(State state) {
     for (Algorithms algorithm : Algorithms.values()) {
       Long timeToRun = state.getLastTime(algorithm);
       if (null != timeToRun) {
-        assertTrue(timeToRun < 200);
         System.out.println(algorithm + " took " + timeToRun + "ms");
+        assertTrue(timeToRun < 200);
       }
     }
   }
