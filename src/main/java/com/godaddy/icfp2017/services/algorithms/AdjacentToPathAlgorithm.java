@@ -28,10 +28,6 @@ public class AdjacentToPathAlgorithm extends BaseAlgorithm {
         if (sourceConnectedCount == 0 ^ targetConnectedCount == 0) {
           setter.apply(river, Weights.Desired);
         }
-        else
-        {
-          setter.apply(river, Weights.Identity);
-        }
       });
   }
 }
