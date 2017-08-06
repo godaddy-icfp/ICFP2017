@@ -4,9 +4,7 @@ import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.Weights;
-import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
 import org.jgrapht.graph.SimpleWeightedGraph;
-import org.jgrapht.alg.ConnectivityInspector;
 
 final public class ConnectedDecisionAlgorithm extends BaseAlgorithm {
 
@@ -39,16 +37,11 @@ final public class ConnectedDecisionAlgorithm extends BaseAlgorithm {
                     }
 
                     if (sourceConnected && targetConnected) {
-
-                        ConnectivityInspector<Site, River> inspector = new ConnectivityInspector<>(state.getClaimedGraph());
-                        boolean redundantConnection;
-                        redundantConnection = inspector.pathExists(source, target);
-
-                        if (redundantConnection) {
-                            setter.apply(river, Weights.Undesireable);
-                        } else {
-                            setter.apply(river, Weights.Max);
-                        }
+                      setter.apply(river, Weights.Undesireable);
+                    }
+                    else
+                    {
+                      setter.apply(river, Weights.Identity);
                     }
                 });
     }
