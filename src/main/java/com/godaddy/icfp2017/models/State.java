@@ -48,9 +48,6 @@ public class State {
   private HashMap<String, Long> lastTimes;
 
   @JsonProperty
-  private int moveCount;
-
-  @JsonProperty
   private int punters;
 
   @JsonProperty
@@ -84,14 +81,6 @@ public class State {
 
   public void setGraphOfEnemyMoves(final SimpleWeightedGraph<Site, River> graph) { this.graphOfEnemyMoves = graph; }
 
-
-  public int getMoveCount() {
-    return moveCount;
-  }
-
-  public void setMoveCount(final int moveCount) {
-    this.moveCount = moveCount;
-  }
 
   public void setMines(final ImmutableSet<Site> mines) {
     this.mines = mines;

@@ -203,7 +203,6 @@ public class GameLogic implements AutoCloseable {
     runAlgorithms(startTime, currentState);
 
     final GameplayP2S response = calculateBestMove(currentState);
-    currentState.setMoveCount(currentState.getMoveCount() + 1);
     response.setState(currentState);
 
     return response;
