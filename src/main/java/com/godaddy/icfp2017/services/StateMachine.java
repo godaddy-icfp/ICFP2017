@@ -51,18 +51,7 @@ final class StateMachine {
     }
 
     final HandshakeS2P s2p = MAPPER.readValue(input.next(), HandshakeS2P.class);
-    return setup(handler.apply(s2p));
-  }
-
-  private <T> T setup(final Handler<T> handler) throws IOException {
-    if (!input.hasNext()) {
-      throw new IllegalStateException();
-    }
-
-    final SetupS2P setupS2P = MAPPER.readValue(input.next(), SetupS2P.class);
-    send(handler.setup(setupS2P));
-    handler.capture(setupS2P);
-    return gameplay(handler);
+    return gameplay(handler.apply(s2p));
   }
 
   private <T> T gameplay(final Handler<T> handler) throws IOException {
@@ -73,6 +62,13 @@ final class StateMachine {
         final GameplayP2S message = handler.gameplay(serverToPlayer);
         send(message);
         handler.capture(serverToPlayer);
+      } else if (
+          jsonNode.has("punter") &&
+          jsonNode.has("punters") &&
+          jsonNode.has("map")) {
+        final SetupS2P setupS2P = MAPPER.readValue(input.next(), SetupS2P.class);
+        send(handler.setup(setupS2P));
+        handler.capture(setupS2P);
       } else if (jsonNode.has("timeout")) {
         return handler.timeout();
       } else if (jsonNode.has("stop")) {
@@ -80,7 +76,6 @@ final class StateMachine {
         handler.capture(serverToPlayer);
         return handler.stop(serverToPlayer);
       } else {
-        // unknown message?
         handler.debug("Unknown message received: " + jsonNode.toString());
       }
     }
