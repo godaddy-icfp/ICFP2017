@@ -72,12 +72,15 @@ class Application {
       }
 
       assert gameDriver != null;
-      gameDriver.run();
+      gameDriver.run("lambda-daddy");
 
-      if(shouldCapture) {
+      if (shouldCapture) {
         gameDriver.dumpCapture(System.err);
       }
 
+    }
+    catch (Exception e) {
+      e.printStackTrace();
     }
     finally {
       if (gameDriver != null) {
