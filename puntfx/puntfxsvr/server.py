@@ -70,18 +70,19 @@ def main_game():
 
     # Setup protocol
     for i in xrange(max_players):
-        setup_message = {
+        setup = {
             "punter" : players[i]["punter_id"],
             "punters" : max_players,
             "map" : map_data
         }
-        print("sending setup to " + str(i) + " " + json.dumps(setup_message))
-        send_json(i, setup_message)
 
         # only for non-web players
         if (players[i]["web_player"] != True):
-            message_json = receive_json(i)
-            assert(message_json["ready"] == players[i]["punter_id"])
+            players[i]["to_client_queue"].put(setup)
+            ready = players[i]["from_client_queue"].get()
+            assert(ready["ready"] == players[i]["punter_id"])
+        else:
+            send_json(i, setup)
 
     # play loop
 
@@ -101,7 +102,6 @@ def main_game():
 
 @sockets.route('/')
 def echo_socket(ws):
-    print("Got connection")
     global current_player_id
     global players
     global sync_lock
@@ -151,6 +151,61 @@ def echo_socket(ws):
 gevent.spawn(main_game)
 #game_thread = threading.Thread(target=main_game)
 #game_thread.start()
+
+# The TCP part
+
+def receive_tcp_json(player_id):
+    n, message = players[player_id]["socket_reader"].readline().split(":", 1)
+    return json.loads(message)
+
+def send_tcp_json(player_id, json_object):
+    message = json.dumps(json_object)
+    players[player_id]["socket"].sendall(str(len(message)) + ":" + message)
+
+def tcp_handler(socket, address):
+    global current_player_id
+
+    to_client_queue = gevent.queue.Queue()
+    from_client_queue = gevent.queue.Queue()
+
+    with sync_lock:
+        player_id = current_player_id
+        current_player_id = current_player_id + 1
+    socket_reader = socket.makefile(mode='rb')
+
+    n, message = socket_reader.readline().split(":", 1)
+    setup_json = json.loads(message)
+    player = {
+        "web_player" : False,
+        "name" : setup_json["me"],
+        "punter_id" : player_id,
+        "socket" : socket,
+        "socket_reader" : socket_reader,
+        "to_client_queue" : to_client_queue,
+        "from_client_queue" : from_client_queue
+    }
+    with sync_lock:
+        players.append(player)
+
+    print("Java client " + setup_json["me"])
+
+    send_tcp_json(player_id, {"you" : setup_json["me"]})
+
+    for json_object in to_client_queue:
+        print("sending " + json.dumps(json_object))
+        send_tcp_json(player_id, json_object)
+        response = receive_tcp_json(player_id)
+        print("read " + json.dumps(response))
+        from_client_queue.put(response)
+
+def tcp_server():
+    # to make the server use SSL, pass certfile and keyfile arguments to the constructor
+    server = gevent.server.StreamServer(('', 9000), tcp_handler)
+    # to start the server asynchronously, use its start() method;
+    # we use blocking serve_forever() here because we have no other jobs
+    server.serve_forever()
+
+gevent.spawn(tcp_server)
 
 @app.route('/')
 def hello():
