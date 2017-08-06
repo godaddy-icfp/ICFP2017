@@ -186,9 +186,12 @@ public class GameLogic implements AutoCloseable {
         siteById);
   }
 
+  private static Long MAX_TURN_TIME = 900L;
   public GameplayP2S move(
       final GameplayS2P move) {
     // load previous state
+
+    Long startTime = System.currentTimeMillis();
 
     final State currentState = Optional.ofNullable(move.getPreviousState())
                                        .orElseGet(() -> Optional.ofNullable(this.currentState)
@@ -205,9 +208,10 @@ public class GameLogic implements AutoCloseable {
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
+    Long timeAvailable = MAX_TURN_TIME - (System.currentTimeMillis() - startTime);
     runAllAlgorithms(completeLatch, currentState);
     try {
-      final boolean allCompleted = completeLatch.await(500, TimeUnit.MILLISECONDS);
+      final boolean allCompleted = completeLatch.await(timeAvailable, TimeUnit.MILLISECONDS);
       if (!allCompleted) {
         debugStream.println("Some algorithms didn't finish");
       }
