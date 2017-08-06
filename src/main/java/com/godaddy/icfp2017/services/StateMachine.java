@@ -58,17 +58,16 @@ final class StateMachine {
     while (input.hasNext()) {
       final ObjectNode jsonNode = (ObjectNode) MAPPER.readTree(input.next());
       if (jsonNode.has("move")) {
-        final GameplayS2P serverToPlayer = MAPPER.treeToValue(jsonNode, GameplayS2P.class);
-        final GameplayP2S message = handler.gameplay(serverToPlayer);
-        send(message);
-        handler.capture(serverToPlayer);
+        final GameplayS2P serverToPunter = MAPPER.treeToValue(jsonNode, GameplayS2P.class);
+        send(handler.gameplay(serverToPunter));
+        handler.capture(serverToPunter);
       } else if (
           jsonNode.has("punter") &&
           jsonNode.has("punters") &&
           jsonNode.has("map")) {
-        final SetupS2P setupS2P = MAPPER.readValue(input.next(), SetupS2P.class);
-        send(handler.setup(setupS2P));
-        handler.capture(setupS2P);
+        final SetupS2P serverToPunter = MAPPER.readValue(input.next(), SetupS2P.class);
+        send(handler.setup(serverToPunter));
+        handler.capture(serverToPunter);
       } else if (jsonNode.has("timeout")) {
         return handler.timeout();
       } else if (jsonNode.has("stop")) {
