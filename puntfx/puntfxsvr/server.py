@@ -6,6 +6,7 @@ import json
 import gevent
 import gevent.lock
 import gevent.queue
+import six.moves
 
 app = Flask(__name__)
 sockets = Sockets(app)
@@ -17,7 +18,7 @@ max_players = games[selected_game]
 with open(selected_game) as data_file:
     map_data = json.load(data_file)
     # normalize the rivers
-    for i in xrange(len(map_data["rivers"])):
+    for i in six.moves.range(len(map_data["rivers"])):
         if (map_data["rivers"][i]["source"] > map_data["rivers"][i]["target"]):
             temp = map_data["rivers"][i]["source"]
             map_data["rivers"][i]["source"] = map_data["rivers"][i]["target"]
@@ -69,7 +70,7 @@ def main_game():
     print("game started")
 
     # Setup protocol
-    for i in xrange(max_players):
+    for i in six.moves.range(max_players):
         setup = {
             "punter" : players[i]["punter_id"],
             "punters" : max_players,
@@ -87,11 +88,11 @@ def main_game():
     # play loop
 
     moves = []
-    for i in xrange(max_players):
+    for i in six.moves.range(max_players):
         moves.append({"pass" : {"punter" : i}})
 
     while(True):
-        for i in xrange(max_players):
+        for i in six.moves.range(max_players):
             move = {"move" : { "moves" : moves }}
             # print("sending move to " + str(i) + " " + json.dumps(move))
             players[i]["to_client_queue"].put(move)
