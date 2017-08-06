@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.godaddy.icfp2017.models.serialization.BinaryStateDeserializer;
 import com.godaddy.icfp2017.models.serialization.BinaryStateSerializer;
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -31,19 +30,22 @@ public class State {
   private ImmutableMap<Integer, Site> siteToMap;
 
   public Long getLastTime(String algorithm) {
-    return lastTime.get(algorithm);
+    return lastTimes.get(algorithm);
+  }
+  public HashMap<String, Long> getLastTimes() {
+    return lastTimes;
   }
 
   public State() {
-    lastTime = new HashMap<>();
+    lastTimes = new HashMap<>();
   }
 
   public void setLastTime(String algorithm, Long lastTime) {
-    this.lastTime.put(algorithm, lastTime);
+    this.lastTimes.put(algorithm, lastTime);
   }
 
   @JsonProperty
-  private HashMap<String, Long> lastTime;
+  private HashMap<String, Long> lastTimes;
 
   @JsonProperty
   private int moveCount;

@@ -114,10 +114,10 @@ public class GameLogicTests {
   }
 
   private void validateTimes(State state) {
-    for (Algorithms algorithm : Algorithms.values()) {
-      Long timeToRun = state.getLastTime(algorithm.toString());
+    for (String key : state.getLastTimes().keySet()) {
+      Long timeToRun = state.getLastTime(key);
       if (null != timeToRun) {
-        System.out.println(algorithm + " took " + timeToRun + "ms");
+        System.out.println(key + " took " + timeToRun + "ms");
         assertTrue(timeToRun < 200);
       }
     }
