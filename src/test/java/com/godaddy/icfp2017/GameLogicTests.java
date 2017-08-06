@@ -66,9 +66,9 @@ public class GameLogicTests {
   public void run_large_graph_test() throws IOException {
     Long timer = System.currentTimeMillis();
     GameLogic impl = new GameLogic();
+    final SetupP2S setup = impl.setup(loadBigSetup());
     validateSetupTime(timer);
 
-    final SetupP2S setup = impl.setup(loadBigSetup());
     final GameplayP2S move = impl.move(loadMoves(setup), null);
 
     validateTimes(move.getState());
