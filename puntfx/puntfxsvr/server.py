@@ -93,10 +93,12 @@ def main_game():
     while(True):
         for i in xrange(max_players):
             move = {"move" : { "moves" : moves }}
-            print("sending move to " + str(i) + " " + json.dumps(move))
+            # print("sending move to " + str(i) + " " + json.dumps(move))
             players[i]["to_client_queue"].put(move)
             move = players[i]["from_client_queue"].get()
             # TODO validate move
+            # Remove state
+            move.pop('state', None)
             moves.append(move)
             moves = moves[1:]
 
@@ -155,7 +157,9 @@ gevent.spawn(main_game)
 # The TCP part
 
 def receive_tcp_json(player_id):
-    n, message = players[player_id]["socket_reader"].readline().split(":", 1)
+    raw = players[player_id]["socket_reader"].readline()
+    print(raw)
+    n, message = raw.split(":", 1)
     return json.loads(message)
 
 def send_tcp_json(player_id, json_object):
@@ -195,7 +199,7 @@ def tcp_handler(socket, address):
         print("sending " + json.dumps(json_object))
         send_tcp_json(player_id, json_object)
         response = receive_tcp_json(player_id)
-        print("read " + json.dumps(response))
+        # print("read " + json.dumps(response))
         from_client_queue.put(response)
 
 def tcp_server():
