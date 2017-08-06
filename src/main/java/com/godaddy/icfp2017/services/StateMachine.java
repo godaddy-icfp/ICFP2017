@@ -56,11 +56,11 @@ public final class StateMachine {
     final SetupS2P setupS2P = MAPPER.readValue(input.next(), SetupS2P.class);
     send(handler.setup(setupS2P));
     handler.capture(setupS2P);
-    return gameplay(setupS2P.getMap().getSites().size(), handler);
+    return gameplay(handler);
   }
 
-  private <T> T gameplay(final int movesRemaining, final Handler<T> handler) throws IOException {
-    for (int i = movesRemaining; i >= 0 && input.hasNext(); --i) {
+  private <T> T gameplay(final Handler<T> handler) throws IOException {
+    while (input.hasNext()) {
       final ObjectNode jsonNode = (ObjectNode) MAPPER.readTree(input.next());
       if (jsonNode.has("move")) {
         final GameplayS2P serverToPlayer = MAPPER.treeToValue(jsonNode, GameplayS2P.class);
