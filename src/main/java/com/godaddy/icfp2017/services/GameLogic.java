@@ -2,10 +2,10 @@ package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.algorithms.*;
-import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
 import com.godaddy.icfp2017.services.analysis.Analyzers;
-import com.godaddy.icfp2017.services.analysis.ConnectedRiverAnalyzer;
+import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
 import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
+import com.godaddy.icfp2017.services.analysis.SiteConnectivityAnalyzer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -32,7 +32,7 @@ public class GameLogic implements AutoCloseable {
 
   private final ImmutableMap<Analyzers, GraphAnalyzer> analyzers =
       ImmutableMap.of(
-          Analyzers.Connected, new ConnectedRiverAnalyzer(),
+          Analyzers.SiteConnectivity, new SiteConnectivityAnalyzer(),
           Analyzers.MineToMinePath, new MineToMinePathAnalyzer()
       );
 
@@ -41,25 +41,30 @@ public class GameLogic implements AutoCloseable {
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
           Algorithms.ConnectedDecision, ConnectedDecisionAlgorithm::new,
+          Algorithms.Connectedness, ConnectednessAlgorithm::new,
           Algorithms.MineToMine, MineToMineAlgorithm::new
           //          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
                      );
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
-  private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
-      Algorithms.AdjacentToMine, 2.0,
-      Algorithms.AdjacentToPath, 0.5,
-      Algorithms.ConnectedDecision, 0.5,
-      Algorithms.MineToMine, 3.0,
-      Algorithms.MinimumSpanningTree, 2.0);
+  private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.<Algorithms, Double>builder()
+      .put(Algorithms.AdjacentToMine, 2.0)
+      .put(Algorithms.AdjacentToPath, 0.5)
+      .put(Algorithms.ConnectedDecision, 0.5)
+      .put(Algorithms.Connectedness, 0.5)
+      .put(Algorithms.MineToMine, 3.0)
+      .put(Algorithms.MinimumSpanningTree, 2.0)
+      .build();
 
-  private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
-      Algorithms.AdjacentToMine, 1.0,
-      Algorithms.AdjacentToPath, 1.0,
-      Algorithms.ConnectedDecision, 0.5,
-      Algorithms.MineToMine, 3.0,
-      Algorithms.MinimumSpanningTree, 3.0);
+  private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.<Algorithms, Double>builder()
+      .put(Algorithms.AdjacentToMine, 1.0)
+      .put(Algorithms.AdjacentToPath, 1.0)
+      .put(Algorithms.ConnectedDecision, 0.5)
+      .put(Algorithms.Connectedness, 1.0)
+      .put(Algorithms.MineToMine, 3.0)
+      .put(Algorithms.MinimumSpanningTree, 3.0)
+      .build();
 
   private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
 
