@@ -13,7 +13,7 @@ sockets = Sockets(app)
 
 games = {"sample.json" : 2,
          "lambda.json" : 3}
-selected_game = "lambda.json"
+selected_game = "sample.json"
 max_players = games[selected_game]
 
 with open(selected_game) as data_file:
@@ -89,6 +89,9 @@ def main_game():
     # play loop
 
     moves = []
+    num_moves = 0
+    max_num_moves = len(map_data["sites"])
+
     for i in six.moves.range(max_players):
         moves.append({"pass" : {"punter" : i}})
 
@@ -97,6 +100,11 @@ def main_game():
         print("###### GAME LOOP #########")
         print("")
         for i in six.moves.range(max_players):
+            print("#######")
+            print("Move " + str(num_moves + 1) + " of " + str(max_num_moves))
+            print("#######")
+            print("")
+
             move = {"move" : { "moves" : moves }}
             print("Sending move: " + players[i]["name"] + " " + json.dumps(move))
             players[i]["to_client_queue"].put(move)
@@ -108,6 +116,14 @@ def main_game():
             moves.append(move)
             moves = moves[1:]
             print("")
+
+            num_moves += 1
+            if (num_moves >= max_num_moves):
+                return None
+
+    print("#########")
+    print("GAME OVER")
+    print("#########")
 
 @sockets.route('/')
 def echo_socket(ws):
