@@ -99,10 +99,16 @@ public class GameLogicTests {
 
         graphAlgorithm.run(Algorithms.AdjacentToMine.toString(), state);
 
-        // Verify the algorithm sets a weight on each river explicitly
-        System.out.println("Validating weight settings present for " + algorithm.toString());
+        // Verify the algorithm sets a valid weight on each river explicitly
+        System.out.println("Validating weight settings for " + algorithm.toString());
         state.getGraph().edgeSet()
-             .forEach(river -> assertTrue(river.getAlgorithmWeights().size() > 0));
+             .forEach(river -> {
+               assertTrue(river.getAlgorithmWeights().size() > 0);
+               river.getAlgorithmWeights().values().forEach(weight -> {
+                 assertTrue(weight <= 1.0);
+                 assertTrue(weight > 0.0);
+               });
+             });
       }
     }
   }
