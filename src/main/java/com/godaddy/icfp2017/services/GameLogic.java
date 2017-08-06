@@ -37,7 +37,7 @@ public class GameLogic implements AutoCloseable {
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
   private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
       Algorithms.AdjacentToMine, 2.0,
-      Algorithms.AdjacentToPath, 0.0,
+      Algorithms.AdjacentToPath, 0.5,
       Algorithms.ConnectedDecisionAlgorithm, 0.5,
       Algorithms.MineToMine, 3.0,
       Algorithms.MinimumSpanningTree, 2.0);
@@ -207,7 +207,7 @@ public class GameLogic implements AutoCloseable {
       // ignore so we respond
     }
 
-    if (currentState.getMoveCount() * currentState.getPunters() > currentState.getMines().size()) {
+    if (!mineAdjacenciesExist(currentState)) {
       strategyState = algorithmValuesProgress;
     }
 
@@ -298,5 +298,18 @@ public class GameLogic implements AutoCloseable {
              map.setEdgeWeight(edge, 0.0);
            }
          });
+  }
+
+  private boolean mineAdjacenciesExist(State state) {
+    long mineAdjacencyCount = state
+        .getMines()
+        .stream()
+        .flatMap(mine -> state.getGraph()
+          .edgesOf(mine)
+          .stream()
+          .filter(river -> !river.isClaimed()))
+        .count();
+
+    return mineAdjacencyCount > 0;
   }
 }
