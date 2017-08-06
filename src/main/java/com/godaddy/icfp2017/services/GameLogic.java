@@ -27,8 +27,8 @@ public class GameLogic implements AutoCloseable {
   private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
           Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
-//          Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
-//          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
+          Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
+          Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
           Algorithms.MineToMine, MineToMineAlgorithm::new
 //          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
       );
@@ -38,13 +38,13 @@ public class GameLogic implements AutoCloseable {
   private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
       Algorithms.AdjacentToMine, 2.0,
       Algorithms.AdjacentToPath, 0.5,
-      Algorithms.ConnectedDecisionAlgorithm, 1.0,
+      Algorithms.ConnectedDecisionAlgorithm, 0.5,
       Algorithms.MineToMine, 3.0,
       Algorithms.MinimumSpanningTree, 2.0);
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
       Algorithms.AdjacentToMine, 1.0,
       Algorithms.AdjacentToPath, 1.0,
-      Algorithms.ConnectedDecisionAlgorithm, 1.0,
+      Algorithms.ConnectedDecisionAlgorithm, 0.5,
       Algorithms.MineToMine, 3.0,
       Algorithms.MinimumSpanningTree, 3.0);
 
