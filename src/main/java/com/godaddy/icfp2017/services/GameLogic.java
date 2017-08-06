@@ -41,13 +41,20 @@ public class GameLogic implements AutoCloseable {
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
-  private final ImmutableMap<Algorithms, Double> algorithmValues = ImmutableMap.of(
-      Algorithms.AdjacentToMine, 1.0,
+  private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.of(
+      Algorithms.AdjacentToMine, 2.0,
+      Algorithms.AdjacentToPath, 0.0,
+      Algorithms.ConnectedDecisionAlgorithm, 0.0,
+      Algorithms.MineToMine, 2.0,
+      Algorithms.MinimumSpanningTree, 0.0);
+  private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
+      Algorithms.AdjacentToMine, 0.0,
       Algorithms.AdjacentToPath, 1.0,
       Algorithms.ConnectedDecisionAlgorithm, 1.0,
       Algorithms.MineToMine, 1.0,
       Algorithms.MinimumSpanningTree, 1.0);
 
+  private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
 
   public GameLogic() {
     executorService = Executors.newFixedThreadPool(Algorithms.values().length);
@@ -204,8 +211,12 @@ public class GameLogic implements AutoCloseable {
       // ignore so we respond
     }
 
+    if (currentState.getMoveCount() > currentState.getMines().size()) {
+      strategyState = algorithmValuesProgress;
+    }
+
     // Compute all the weight
-    Optional<River> bestRiver = this.computeWeightOnGraph(currentState, algorithmValues);
+    Optional<River> bestRiver = this.computeWeightOnGraph(currentState, strategyState);
 
     // initialize the response
     final GameplayP2S response = bestRiver
