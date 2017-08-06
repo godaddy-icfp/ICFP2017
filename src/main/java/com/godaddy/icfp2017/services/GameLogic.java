@@ -197,8 +197,6 @@ public class GameLogic implements AutoCloseable {
 
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
 
-    Pass pass = new Pass();
-    pass.setPunter(currentState.getPunter());
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
@@ -224,7 +222,7 @@ public class GameLogic implements AutoCloseable {
     final GameplayP2S response = bestRiver
         .map(river -> {
           final GameplayP2S r = new GameplayP2S();
-          Claim claim = new Claim();
+          final Claim claim = new Claim();
           claim.setPunter(currentState.getPunter());
           claim.setTarget(river.getTarget());
           claim.setSource(river.getSource());
@@ -234,6 +232,8 @@ public class GameLogic implements AutoCloseable {
         })
         .orElseGet(() -> {
           final GameplayP2S r = new GameplayP2S();
+          final Pass pass = new Pass();
+          pass.setPunter(currentState.getPunter());
           r.setPass(pass);
           return r;
         });
