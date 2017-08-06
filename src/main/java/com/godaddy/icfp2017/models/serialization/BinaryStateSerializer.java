@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.godaddy.icfp2017.models.State;
+import net.jpountz.lz4.LZ4BlockOutputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,7 +26,9 @@ public class BinaryStateSerializer extends StdSerializer<State> {
 
     final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-    try (final Output output = new Output(byteArrayOutputStream)) {
+    try (
+        final LZ4BlockOutputStream lz4 = new LZ4BlockOutputStream(byteArrayOutputStream);
+        final Output output = new Output(lz4)) {
       kryo.writeObject(output, value);
     }
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.godaddy.icfp2017.models.State;
+import net.jpountz.lz4.LZ4BlockInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -24,6 +25,10 @@ public class BinaryStateDeserializer extends StdDeserializer<State> {
 
     final byte[] binaryValue = p.getBinaryValue();
 
-    return kryo.readObject(new Input(new ByteArrayInputStream(binaryValue)), State.class);
+    try (
+        ByteArrayInputStream bais = new ByteArrayInputStream(binaryValue);
+        LZ4BlockInputStream lz4 = new LZ4BlockInputStream(bais)) {
+      return kryo.readObject(new Input(lz4), State.class);
+    }
   }
 }
