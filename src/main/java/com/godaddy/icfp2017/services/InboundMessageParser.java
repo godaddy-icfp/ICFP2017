@@ -27,6 +27,8 @@ public class InboundMessageParser {
           s2p = parser.readValueAs(HandshakeS2P.class);
           break;
         case "punter":
+        case "punters":
+        case "map":
           s2p = parser.readValueAs(SetupS2P.class);
           break;
         case "move":
