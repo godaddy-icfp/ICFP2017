@@ -8,21 +8,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
 import java.util.Queue;
 
 public class GameDriver implements AutoCloseable {
 
-  private final InputStream inputStream;
-  private final PrintStream outputStream;
+  private final StateMachine stateMachine;
   private final PrintStream debugStream;
-
   private final GameLogic gameLogic;
 
-  private final InboundMessageParser inboundMessageParser;
-
   private final Queue<ICFPMessage> capture = Queues.newConcurrentLinkedQueue();
-
   private final boolean shouldCapture;
 
   public GameDriver(
@@ -30,74 +25,61 @@ public class GameDriver implements AutoCloseable {
       final OutputStream outputStream,
       final PrintStream debugStream,
       final GameLogic gameLogic,
-      final boolean shouldCapture) {
-    this.inputStream = inputStream;
-    this.outputStream = new PrintStream(outputStream);
+      final boolean shouldCapture) throws IOException {
     this.debugStream = debugStream;
+    this.stateMachine = new StateMachine(
+        new FrameReader(inputStream, buffer -> this.debug("in => ", buffer)),
+        new FrameWriter(outputStream, buffer -> this.debug("out => ", buffer)));
+
     this.gameLogic = gameLogic;
     this.shouldCapture = shouldCapture;
+  }
 
-    inboundMessageParser = new InboundMessageParser();
+  private void debug(final String prefix, final byte[] bytes) {
+    debugStream.print(prefix);
+    debugStream.println(new String(bytes, StandardCharsets.US_ASCII));
+    debugStream.flush();
+  }
+
+  private static HandShakeP2S getHandshake(final String name) {
+    final HandShakeP2S handShakeP2S = new HandShakeP2S();
+    handShakeP2S.setMe(name);
+    return handShakeP2S;
   }
 
   public void run(final String name) throws Exception {
 
     // send the handshake message to the server
-    final HandShakeP2S handShakeP2S = new HandShakeP2S();
-    handShakeP2S.setMe(name);
-    sendMessage(handShakeP2S);
-
-    // get the handshake from the server
-    final Optional<ServerToPlayer> message = getMessage();
-
-    if (!message.isPresent()) {
-      return;
-    }
-
-    final HandshakeS2P handshakeS2P = (HandshakeS2P) message.get();
-
-    while (true) {
-      // read the next message from the server
-      final Optional<ServerToPlayer> s2pOptional = getMessage();
-
-      if (!s2pOptional.isPresent()) {
-        debugStream.println("Got unknown input");
-        continue;
-      }
-
-      final ServerToPlayer serverToPlayerMessage = s2pOptional.get();
-
-      if (shouldCapture) {
-        capture.add(serverToPlayerMessage);
-      }
-
-      // setup
-      if (serverToPlayerMessage instanceof SetupS2P) {
-        final SetupS2P setupS2P = (SetupS2P) serverToPlayerMessage;
-        final SetupP2S setupResponse = gameLogic.setup(setupS2P);
-        sendMessage(setupResponse);
+    stateMachine.handshake(getHandshake(name), handshakeS2P -> new StateMachine.Handler<Void>() {
+      @Override
+      public void capture(final ICFPMessage message) {
         if (shouldCapture) {
-          capture.add(setupResponse);
-        }
-
-        // gameplay
-        else if (serverToPlayerMessage instanceof GameplayS2P) {
-          final GameplayS2P gameplayS2P = (GameplayS2P) serverToPlayerMessage;
-          final GameplayP2S moveResponse = gameLogic.move(gameplayS2P);
-          sendMessage(moveResponse);
-          if (shouldCapture) {
-            capture.add(moveResponse);
-          }
-        }
-        else if (serverToPlayerMessage instanceof TimeoutServerToPlayer) {
-          debugStream.println("Got a timeout message");
-        }
-        else if (serverToPlayerMessage instanceof GameEndServerToPlayer) {
-          debugStream.println("game over");
-          return;
+          capture.add(message);
         }
       }
-    }
+
+      @Override
+      public SetupP2S setup(final SetupS2P message) {
+        return gameLogic.setup(message);
+      }
+
+      @Override
+      public GameplayP2S gameplay(final GameplayS2P message) {
+        return gameLogic.move(message);
+      }
+
+      @Override
+      public Void timeout() {
+        debugStream.println("Got a timeout message");
+        return null;
+      }
+
+      @Override
+      public Void stop(final GameEndServerToPlayer message) {
+        debugStream.println("game over");
+        return null;
+      }
+    });
   }
 
   @Override
@@ -123,64 +105,5 @@ public class GameDriver implements AutoCloseable {
         e.printStackTrace();
       }
     }
-
-  }
-
-  private void sendMessage(PlayerToServer p2s) throws JsonProcessingException {
-
-    String json = JsonMapper.Instance.writeValueAsString(p2s);
-    final String output = json.length() + 1 + ":" + json + '\n';
-    outputStream.print(output);
-    outputStream.flush();
-    debugStream.println("out => " + output);
-  }
-
-  private Optional<ServerToPlayer> getMessage() throws Exception {
-    final int messageLength = readInteger();
-    if (messageLength == 0) {
-      return Optional.empty();
-    }
-
-    final String messageString = readString(messageLength);
-
-    debugStream.println("in => " + messageLength + ":" + messageString);
-
-    if (messageString.length() > 0) {
-      return inboundMessageParser.getNextMessage(messageString);
-    }
-    else {
-      return Optional.empty();
-    }
-  }
-
-  private int readInteger() throws IOException {
-    StringBuilder sb = new StringBuilder();
-    char c;
-    do {
-      c = (char) inputStream.read();
-
-      if (Character.isDigit(c)) {
-        sb.append(c);
-      }
-    } while (Character.isDigit(c) || Character.isWhitespace(c));
-    if (sb.length() > 0) {
-      return Integer.parseInt(sb.toString());
-    }
-    else {
-      return 0;
-    }
-  }
-
-  private String readString(final int length) throws IOException {
-    final byte[] buffer = new byte[1024];
-    int totalLengthRead = 0;
-    StringBuilder sb = new StringBuilder();
-    while (totalLengthRead < length) {
-      int charsToRead = Math.min(buffer.length, length - totalLengthRead);
-      final int bytesRead = inputStream.read(buffer, 0, charsToRead);
-      totalLengthRead += bytesRead;
-      sb.append(new String(buffer, 0, bytesRead));
-    }
-    return sb.toString();
   }
 }
