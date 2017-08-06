@@ -87,11 +87,6 @@ public class GameLogic implements AutoCloseable {
     RankedPathsCalculator calculator = new RankedPathsCalculator(state);
     state.setRankedPaths(calculator.calculate());
 
-    analyzers.keySet().forEach(key -> {
-      GraphAnalyzer analyzer = analyzers.get(key);
-      analyzer.run(key.toString(), state);
-    });
-
     this.currentState = state;
 
     return response;
@@ -196,6 +191,11 @@ public class GameLogic implements AutoCloseable {
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
 
     MineToMinePathCollector.collect(currentState);
+
+    analyzers.keySet().forEach(key -> {
+      GraphAnalyzer analyzer = analyzers.get(key);
+      analyzer.run(key.toString(), currentState);
+    });
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
