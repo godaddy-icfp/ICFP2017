@@ -1,14 +1,19 @@
 package com.godaddy.icfp2017;
 
-import com.godaddy.icfp2017.models.*;
+import com.godaddy.icfp2017.models.GameplayP2S;
+import com.godaddy.icfp2017.models.GameplayS2P;
+import com.godaddy.icfp2017.models.Path;
+import com.godaddy.icfp2017.models.River;
+import com.godaddy.icfp2017.models.SetupP2S;
+import com.godaddy.icfp2017.models.SetupS2P;
+import com.godaddy.icfp2017.models.Site;
+import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.GraphTests;
 import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.Weights;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
 
@@ -25,18 +30,18 @@ public class GameLogicTests {
 
   @Test
   public void run_game_and_one_move() throws IOException {
-    GameLogic impl = new GameLogic();
+    GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadSetup());
     final GameplayS2P previousMoves = loadMoves(setup);
 
-    final GameplayP2S move = impl.move(previousMoves, null);
+    final GameplayP2S move = impl.move(previousMoves);
 
     assertNotNull(move);
   }
 
   @Test
   public void run_game_and_one_move_with_adjacent_mines() throws IOException {
-    GameLogic impl = new GameLogic();
+    GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadSetup());
     State state = setup.getState();
     final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(Algorithms.AdjacentToMine);
@@ -47,24 +52,24 @@ public class GameLogicTests {
     SimpleWeightedGraph<Site, River> graph = state.getGraph();
 
     graph.vertexSet()
-        .forEach(site -> graph.edgesOf(site)
-            .forEach(river -> {
-              Double weight = river.getAlgorithmWeights().get(Algorithms.AdjacentToMine);
-              if (site.isMine()) {
-                assertTrue(
-                     weight == Weights.Max);
-              }
-            }));
+         .forEach(site -> graph.edgesOf(site)
+                               .forEach(river -> {
+                                 Double weight = river.getAlgorithmWeights().get(Algorithms.AdjacentToMine);
+                                 if (site.isMine()) {
+                                   assertTrue(
+                                       weight == Weights.Max);
+                                 }
+                               }));
   }
 
   @Test
   public void run_large_graph_test() throws IOException {
     Long timer = System.currentTimeMillis();
-    GameLogic impl = new GameLogic();
+    GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadBigSetup());
     validateSetupTime(timer);
 
-    final GameplayP2S move = impl.move(loadMoves(setup), null);
+    final GameplayP2S move = impl.move(loadMoves(setup));
 
     validateTimes(move.getState());
   }
@@ -72,23 +77,23 @@ public class GameLogicTests {
   @Test
   public void run_small_graph_test() throws IOException {
     Long timer = System.currentTimeMillis();
-    GameLogic impl = new GameLogic();
+    GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadSetup());
     validateSetupTime(timer);
 
-    final GameplayP2S move = impl.move(loadMoves(setup), null);
+    final GameplayP2S move = impl.move(loadMoves(setup));
 
     validateTimes(move.getState());
   }
 
   @Test
   public void verify_weights_are_set() throws IOException {
-    GameLogic impl = new GameLogic();
+    GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadBigSetup());
     State state = setup.getState();
     for (Algorithms algorithm : Algorithms.values()) {
-      final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(algorithm);
-      if (null != graphAlgorithm) {
+      if (impl.isUsingAlgorithm(algorithm)) {
+        final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(algorithm);
         // Remove all current weights
         state.getGraph().edgeSet().forEach(river -> river.getAlgorithmWeights().clear());
 
@@ -97,7 +102,7 @@ public class GameLogicTests {
         // Verify the algorithm sets a weight on each river explicitly
         System.out.println("Validating weight settings present for " + algorithm.toString());
         state.getGraph().edgeSet()
-            .forEach(river -> assertTrue(river.getAlgorithmWeights().size() > 0));
+             .forEach(river -> assertTrue(river.getAlgorithmWeights().size() > 0));
       }
     }
   }
@@ -121,7 +126,7 @@ public class GameLogicTests {
   @Test
   public void run_() throws IOException {
 
-    GameLogic impl = new GameLogic();
+    GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadSetup());
 
     final String s = JsonMapper.Instance.writeValueAsString(setup.getState());
@@ -133,14 +138,14 @@ public class GameLogicTests {
     assertNotNull(state);
   }
 
-    @Test
-    public void run_game_and_ensure_ranked_paths_are_calculated() throws IOException {
-      GameLogic impl = new GameLogic();
-      final SetupP2S setup = impl.setup(loadSetup());
-      SortedSet<Path> actualRankedPaths = setup.getState().getRankedPaths();
-      Set<Path> expectedRankedPaths = new HashSet<>();
-      //expectedRankedPaths.add(new Path(5, 1, 8));
-      expectedRankedPaths.add(new Path(1, 5, 8, 2));
+  @Test
+  public void run_game_and_ensure_ranked_paths_are_calculated() throws IOException {
+    GameLogic impl = new GameLogic(System.err);
+    final SetupP2S setup = impl.setup(loadSetup());
+    SortedSet<Path> actualRankedPaths = setup.getState().getRankedPaths();
+    Set<Path> expectedRankedPaths = new HashSet<>();
+    //expectedRankedPaths.add(new Path(5, 1, 8));
+    expectedRankedPaths.add(new Path(1, 5, 8, 2));
 /*      expectedRankedPaths.add(new Path(5, 2, 4));
       expectedRankedPaths.add(new Path(5, 0, 4));
       expectedRankedPaths.add(new Path(1, 6, 4));
@@ -154,12 +159,12 @@ public class GameLogicTests {
       expectedRankedPaths.add(new Path(1, 2, 1));
       expectedRankedPaths.add(new Path(1, 0, 1));*/
 
-      int size = actualRankedPaths.size();
-      assertTrue(size == expectedRankedPaths.size());
-      actualRankedPaths.addAll(expectedRankedPaths);
-      assertTrue(actualRankedPaths.size() == size);
+    int size = actualRankedPaths.size();
+    assertTrue(size == expectedRankedPaths.size());
+    actualRankedPaths.addAll(expectedRankedPaths);
+    assertTrue(actualRankedPaths.size() == size);
 
-    }
+  }
 
   private SetupS2P loadBigSetup() throws IOException {
     final ClassLoader classLoader = GraphTests.class.getClassLoader();

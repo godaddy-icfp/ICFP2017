@@ -1,14 +1,20 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
-import com.godaddy.icfp2017.services.algorithms.*;
-import com.google.common.base.Preconditions;
+import com.godaddy.icfp2017.services.algorithms.AdjacentToMinesAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.AdjacentToPathAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.AlgorithmFactory;
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.godaddy.icfp2017.services.algorithms.ConnectedDecisionAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.MineToMineAlgorithm;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
@@ -22,6 +28,7 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 public class GameLogic implements AutoCloseable {
   private final ExecutorService executorService;
+  private final PrintStream debugStream;
 
   private State currentState;
 
@@ -31,8 +38,8 @@ public class GameLogic implements AutoCloseable {
           Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
           Algorithms.ConnectedDecisionAlgorithm, ConnectedDecisionAlgorithm::new,
           Algorithms.MineToMine, MineToMineAlgorithm::new
-//          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
-      );
+          //          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
+                     );
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
@@ -42,6 +49,7 @@ public class GameLogic implements AutoCloseable {
       Algorithms.ConnectedDecisionAlgorithm, 0.5,
       Algorithms.MineToMine, 3.0,
       Algorithms.MinimumSpanningTree, 2.0);
+
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.of(
       Algorithms.AdjacentToMine, 1.0,
       Algorithms.AdjacentToPath, 1.0,
@@ -51,8 +59,9 @@ public class GameLogic implements AutoCloseable {
 
   private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
 
-  public GameLogic() {
-    executorService = Executors.newFixedThreadPool(Algorithms.values().length);
+  public GameLogic(final PrintStream debugStream) {
+    this.debugStream = debugStream;
+    executorService = Executors.newFixedThreadPool(algorithmCreators.size());
   }
 
   public SetupP2S setup(final SetupS2P setup) {
@@ -95,8 +104,8 @@ public class GameLogic implements AutoCloseable {
 
     for (River river : state.getGraph().edgeSet()) {
       double weight = river.getAlgorithmWeights().entrySet().stream()
-          .mapToDouble(e -> e.getValue() * algorithmValues.get(e.getKey()))
-          .reduce(1.0, (x, y) -> x * y);
+                           .mapToDouble(e -> e.getValue() * algorithmValues.get(e.getKey()))
+                           .reduce(1.0, (x, y) -> x * y);
       state.getGraph().setEdgeWeight(river, weight);
       if (!river.isClaimed() && (weight > bestWeight)) {
         bestWeight = weight;
@@ -169,13 +178,13 @@ public class GameLogic implements AutoCloseable {
         siteById);
   }
 
-  public GameplayP2S move(final GameplayS2P move,
-      Algorithms algorithm) {
+  public GameplayP2S move(
+      final GameplayS2P move) {
     // load previous state
 
     final State currentState = Optional.ofNullable(move.getPreviousState())
-        .orElseGet(() -> Optional.ofNullable(this.currentState)
-            .orElseGet(State::new));
+                                       .orElseGet(() -> Optional.ofNullable(this.currentState)
+                                                                .orElseGet(State::new));
 
     zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState);
 
@@ -183,14 +192,14 @@ public class GameLogic implements AutoCloseable {
 
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
-    if (null != algorithm) {
-      runSpecificAlgorithm(completeLatch, currentState, algorithm);
-    } else {
-      runAllAlgorithms(completeLatch, currentState);
-    }
+    runAllAlgorithms(completeLatch, currentState);
     try {
-      completeLatch.await(500, TimeUnit.MILLISECONDS);
-    } catch (InterruptedException e) {
+      final boolean allCompleted = completeLatch.await(500, TimeUnit.MILLISECONDS);
+      if (!allCompleted) {
+        debugStream.println("Some algorithms didn't finish");
+      }
+    }
+    catch (InterruptedException e) {
       // ignore so we respond
     }
 
@@ -227,37 +236,45 @@ public class GameLogic implements AutoCloseable {
     return response;
   }
 
+  public boolean isUsingAlgorithm(final Algorithms algorithm) {
+    return algorithmCreators.containsKey(algorithm);
+  }
+
   public GraphAlgorithm getGraphAlgorithm(Algorithms algorithm) {
-    AlgorithmFactory factory = algorithmCreators.get(algorithm);
-    GraphAlgorithm graphAlgorithm = null;
-    if (null != factory) {
-      graphAlgorithm = algorithmCreators.
-          get(algorithm).create(
-          river -> river.getAlgorithmWeights().getOrDefault(algorithm, 1.0),
+    final AlgorithmFactory algorithmFactory = algorithmCreators.get(algorithm);
+    if (null != algorithmFactory) {
+      return algorithmFactory.create(
+          river -> river.getAlgorithmWeights().getOrDefault(algorithm, Weights.Identity),
           (river, score) -> {
             river.getAlgorithmWeights().put(algorithm, score);
             return score;
           });
     }
-    return graphAlgorithm;
+
+    throw new UnsupportedOperationException("No Algorithm creator defined for: " + algorithm);
   }
 
-  private void runSpecificAlgorithm(final CountDownLatch completeLatch, final State state,
+  private void runSpecificAlgorithm(
+      final CountDownLatch completeLatch, final State state,
       Algorithms algorithm) {
     final GraphAlgorithm graphAlgorithm = getGraphAlgorithm(algorithm);
     executorService.submit(() -> {
       try {
         graphAlgorithm.run(algorithm, state);
-      } catch (Exception e) {
-        System.out.println(algorithm + ": " + e.toString());
-      } finally {
+      }
+      catch (Exception e) {
+        debugStream.print(algorithm);
+        debugStream.print(" Error: ");
+        debugStream.println(e.toString());
+      }
+      finally {
         completeLatch.countDown();
       }
     });
   }
 
   private void runAllAlgorithms(final CountDownLatch completeLatch, final State state) {
-    for (Algorithms algorithm: algorithmCreators.keySet()) {
+    for (Algorithms algorithm : algorithmCreators.keySet()) {
       runSpecificAlgorithm(completeLatch, state, algorithm);
     }
   }
@@ -275,7 +292,7 @@ public class GameLogic implements AutoCloseable {
            final Site sourceVertex = state.getSiteToMap().get(claim.getSource());
            final Site targetVertex = state.getSiteToMap().get(claim.getTarget());
            final River edge = Optional.ofNullable(map.getEdge(sourceVertex, targetVertex))
-               .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
+                                      .orElseGet(() -> map.getEdge(targetVertex, sourceVertex));
            if (edge == null) {
              return;
            }
@@ -286,7 +303,8 @@ public class GameLogic implements AutoCloseable {
              // remove this edge entirely from the graph so we can avoid
              // traversing it during any analysis passes
              map.removeEdge(edge);
-           } else {
+           }
+           else {
              // if we own the edge mark it as weight 0, it's free to use
              map.setEdgeWeight(edge, 0.0);
            }
@@ -298,9 +316,9 @@ public class GameLogic implements AutoCloseable {
         .getMines()
         .stream()
         .flatMap(mine -> state.getGraph()
-          .edgesOf(mine)
-          .stream()
-          .filter(river -> !river.isClaimed()))
+                              .edgesOf(mine)
+                              .stream()
+                              .filter(river -> !river.isClaimed()))
         .count();
 
     return mineAdjacencyCount > 0;

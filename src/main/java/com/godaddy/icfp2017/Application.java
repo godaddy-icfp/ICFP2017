@@ -2,11 +2,12 @@ package com.godaddy.icfp2017;
 
 import com.godaddy.icfp2017.services.GameDriver;
 import com.godaddy.icfp2017.services.GameLogic;
+import com.google.common.io.ByteStreams;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import java.io.BufferedInputStream;
-import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.Socket;
 
 class Application {
@@ -41,18 +42,19 @@ class Application {
       return;
     }
 
-    GameLogic gameLogic = new GameLogic();
-
 
     GameDriver gameDriver = null;
     Socket communicationSocket = null;
 
     try {
-      OutputStream debugStream = null;
+      PrintStream debugStream = new PrintStream(ByteStreams.nullOutputStream());
 
       if (options.has("debug")) {
         debugStream = System.err;
       }
+
+      GameLogic gameLogic = new GameLogic(debugStream);
+
 
       final boolean shouldCapture = options.has("capture");
 
