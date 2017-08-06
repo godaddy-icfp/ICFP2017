@@ -40,7 +40,7 @@ public class GameLogicTests {
     final SetupP2S setup = impl.setup(loadSetup());
     State state = setup.getState();
     final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(Algorithms.AdjacentToMine);
-    graphAlgorithm.run(Algorithms.AdjacentToMine, state);
+    graphAlgorithm.run(Algorithms.AdjacentToMine.toString(), state);
 
     validateTimes(state);
 
@@ -92,7 +92,7 @@ public class GameLogicTests {
         // Remove all current weights
         state.getGraph().edgeSet().forEach(river -> river.getAlgorithmWeights().clear());
 
-        graphAlgorithm.run(Algorithms.AdjacentToMine, state);
+        graphAlgorithm.run(Algorithms.AdjacentToMine.toString(), state);
 
         // Verify the algorithm sets a weight on each river explicitly
         System.out.println("Validating weight settings present for " + algorithm.toString());
@@ -110,7 +110,7 @@ public class GameLogicTests {
 
   private void validateTimes(State state) {
     for (Algorithms algorithm : Algorithms.values()) {
-      Long timeToRun = state.getLastTime(algorithm);
+      Long timeToRun = state.getLastTime(algorithm.toString());
       if (null != timeToRun) {
         System.out.println(algorithm + " took " + timeToRun + "ms");
         assertTrue(timeToRun < 200);

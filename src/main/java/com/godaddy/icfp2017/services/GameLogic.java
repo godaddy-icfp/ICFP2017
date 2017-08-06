@@ -2,6 +2,9 @@ package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.algorithms.*;
+import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
+import com.godaddy.icfp2017.services.analysis.Analyzers;
+import com.godaddy.icfp2017.services.analysis.ConnectedAnalyzer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -23,6 +26,11 @@ public class GameLogic implements AutoCloseable {
   private final ExecutorService executorService;
 
   private State currentState;
+
+  private final ImmutableMap<Analyzers, GraphAnalyzer> analyzers =
+      ImmutableMap.of(
+          Analyzers.Connected, new ConnectedAnalyzer()
+      );
 
   private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.of(
@@ -75,6 +83,11 @@ public class GameLogic implements AutoCloseable {
     MineToMinePathCollector.collect(state);
     RankedPathsCalculator calculator = new RankedPathsCalculator(state);
     state.setRankedPaths(calculator.calculate());
+
+    analyzers.keySet().forEach(key -> {
+      GraphAnalyzer analyzer = analyzers.get(key);
+      analyzer.run(key.toString(), state);
+    });
 
     this.currentState = state;
 
@@ -260,7 +273,7 @@ public class GameLogic implements AutoCloseable {
     final GraphAlgorithm graphAlgorithm = getGraphAlgorithm(algorithm);
     executorService.submit(() -> {
       try {
-        graphAlgorithm.run(algorithm, state);
+        graphAlgorithm.run(algorithm.toString(), state);
       } catch (Exception e) {
         System.out.println(algorithm + ": " + e.toString());
       } finally {
