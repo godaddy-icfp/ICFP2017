@@ -68,17 +68,29 @@ public class GameLogicTests {
 
   @Test
   public void run_large_graph_test() throws IOException {
+    Long timer = System.currentTimeMillis();
     GameLogic impl = new GameLogic();
+    validateSetupTime(timer);
+
     final SetupP2S setup = impl.setup(loadBigSetup());
     final GameplayP2S move = impl.move(loadMoves(setup), null);
 
     validateTimes(move.getState());
   }
 
+  private void validateSetupTime(Long timer) {
+    Long timeTotal = System.currentTimeMillis() - timer;
+    System.out.println("Setup for graph took " + timeTotal + "ms");
+    assertTrue(timeTotal < 500);
+  }
+
   @Test
   public void run_small_graph_test() throws IOException {
+    Long timer = System.currentTimeMillis();
     GameLogic impl = new GameLogic();
     final SetupP2S setup = impl.setup(loadSetup());
+    validateSetupTime(timer);
+
     final GameplayP2S move = impl.move(loadMoves(setup), null);
 
     validateTimes(move.getState());
