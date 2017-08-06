@@ -4,7 +4,7 @@ import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.algorithms.*;
 import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
 import com.godaddy.icfp2017.services.analysis.Analyzers;
-import com.godaddy.icfp2017.services.analysis.ConnectedAnalyzer;
+import com.godaddy.icfp2017.services.analysis.ConnectedRiverAnalyzer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
@@ -31,7 +31,7 @@ public class GameLogic implements AutoCloseable {
 
   private final ImmutableMap<Analyzers, GraphAnalyzer> analyzers =
       ImmutableMap.of(
-          Analyzers.Connected, new ConnectedAnalyzer()
+          Analyzers.Connected, new ConnectedRiverAnalyzer()
       );
 
   private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
