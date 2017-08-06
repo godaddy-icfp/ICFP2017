@@ -29,7 +29,15 @@ java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar -mode=online -host=punter.inf
 java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar -mode=online -host=punter.inf.ed.ac.uk -port=9009 -capture
 ```
 
-You can copy in either the debug logs or the capture logs at the end
+This will place the log in stderr.  Using the following:
+
+```bash
+java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar -mode=online -host=punter.inf.ed.ac.uk -port=9009 -capture &> capture.txt
+```
+
+## Replaying a log
+
+Show replayer/index.html in a browser, paste the log in the replay information box and press the replay button.
 
 ## Overview notes
 
