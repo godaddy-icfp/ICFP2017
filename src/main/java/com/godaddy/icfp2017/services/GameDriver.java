@@ -1,15 +1,7 @@
 package com.godaddy.icfp2017.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.godaddy.icfp2017.models.GameplayP2S;
-import com.godaddy.icfp2017.models.GameplayS2P;
-import com.godaddy.icfp2017.models.HandShakeP2S;
-import com.godaddy.icfp2017.models.HandshakeS2P;
-import com.godaddy.icfp2017.models.ICFPMessage;
-import com.godaddy.icfp2017.models.PlayerToServer;
-import com.godaddy.icfp2017.models.ServerToPlayer;
-import com.godaddy.icfp2017.models.SetupP2S;
-import com.godaddy.icfp2017.models.SetupS2P;
+import com.godaddy.icfp2017.models.*;
 import com.google.common.collect.Queues;
 import com.google.common.io.ByteStreams;
 
@@ -49,11 +41,11 @@ public class GameDriver implements AutoCloseable {
     inboundMessageParser = new InboundMessageParser();
   }
 
-  public void run() throws Exception {
+  public void run(final String name) throws Exception {
 
     // send the handshake message to the server
     final HandShakeP2S handShakeP2S = new HandShakeP2S();
-    handShakeP2S.setMe("Blah");
+    handShakeP2S.setMe(name);
     sendMessage(handShakeP2S);
 
     // get the handshake from the server
@@ -70,7 +62,8 @@ public class GameDriver implements AutoCloseable {
       final Optional<ServerToPlayer> s2pOptional = getMessage();
 
       if (!s2pOptional.isPresent()) {
-        return;
+        debugStream.println("Got unknown input");
+        continue;
       }
 
       final ServerToPlayer serverToPlayerMessage = s2pOptional.get();
@@ -98,6 +91,13 @@ public class GameDriver implements AutoCloseable {
           capture.add(moveResponse);
         }
       }
+      else if (serverToPlayerMessage instanceof TimeoutServerToPlayer) {
+        debugStream.println("Got a timeout message");
+      }
+      else if (serverToPlayerMessage instanceof GameEndServerToPlayer) {
+        debugStream.println("game over");
+        return;
+      }
     }
   }
 
@@ -112,9 +112,13 @@ public class GameDriver implements AutoCloseable {
     output.println();
 
     for (final ICFPMessage icfpMessage : capture) {
+
+      if (icfpMessage instanceof GameplayP2S) {
+        ((GameplayP2S) icfpMessage).setState(null);
+      }
+
       try {
-        output.println(
-            JsonMapper.Instance.writeValueAsString(icfpMessage));
+        output.println(JsonMapper.Instance.writeValueAsString(icfpMessage));
       }
       catch (JsonProcessingException e) {
         e.printStackTrace();

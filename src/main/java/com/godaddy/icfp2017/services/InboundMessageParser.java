@@ -3,10 +3,12 @@ package com.godaddy.icfp2017.services;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.godaddy.icfp2017.models.GameEndServerToPlayer;
 import com.godaddy.icfp2017.models.GameplayS2P;
 import com.godaddy.icfp2017.models.HandshakeS2P;
 import com.godaddy.icfp2017.models.ServerToPlayer;
 import com.godaddy.icfp2017.models.SetupS2P;
+import com.godaddy.icfp2017.models.TimeoutServerToPlayer;
 
 import java.util.Optional;
 
@@ -30,8 +32,12 @@ public class InboundMessageParser {
         case "move":
           s2p = parser.readValueAs(GameplayS2P.class);
           break;
+        case "timeout":
+          s2p = new TimeoutServerToPlayer();
+          break;
         case "stop":
-          return Optional.empty();
+          s2p = parser.readValueAs(GameEndServerToPlayer.class);
+          break;
       }
     }
 
