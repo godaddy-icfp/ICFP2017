@@ -45,7 +45,7 @@ final public class ConnectedDecisionAlgorithm extends BaseAlgorithm {
                         redundantConnection = inspector.pathExists(source, target);
 
                         if (redundantConnection) {
-                            setter.apply(river, Weights.Zero);
+                            setter.apply(river, Weights.Undesireable);
                         } else {
                             setter.apply(river, Weights.Max);
                         }

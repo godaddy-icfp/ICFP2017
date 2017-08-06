@@ -9,5 +9,6 @@ public class Weights {
   public static final double Desired = 1.5;
   public static final double Decent = 1.3;
   public static final double Identity = 1.0;
+  public static final double Undesireable = 0.1;
   public static final double Zero = 0;
 }
