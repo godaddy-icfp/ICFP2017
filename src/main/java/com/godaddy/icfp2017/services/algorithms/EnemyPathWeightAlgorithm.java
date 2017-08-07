@@ -25,6 +25,9 @@ public class EnemyPathWeightAlgorithm extends BaseAlgorithm {
     final double siteExp = graph.vertexSet().size() * graph.vertexSet().size();
 
     graph.vertexSet().forEach(site -> {
+
+      if (site.isMine()) return;
+
       double totalEdges = 0.0;
       double takenEdges = 0.0;
 
@@ -35,7 +38,7 @@ public class EnemyPathWeightAlgorithm extends BaseAlgorithm {
       ImmutableSet<River> mergedRivers = ImmutableSet.<River>builder().addAll(graph.edgesOf(site)).addAll(graphOfEnemyMoves.edgesOf(site)).build();
 
       for (River river : mergedRivers) {
-        if (river.isClaimed()) takenEdges += 1;
+        if (river.isClaimed() && river.getClaimedBy() != state.getPunter()) takenEdges += 1;
         totalEdges += 1;
 
         river.getMaxEnemyPathFromSites().forEach((mine, weight) -> {
