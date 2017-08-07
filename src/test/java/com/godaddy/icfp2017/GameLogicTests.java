@@ -129,7 +129,7 @@ public class GameLogicTests {
       Long timeToRun = state.getLastTimes().get(key);
       if (null != timeToRun) {
         System.out.println(key + " took " + timeToRun + "ms");
-        assertTrue(timeToRun < 200);
+        assertTrue(timeToRun < 400);
       }
     }
   }
