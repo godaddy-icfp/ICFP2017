@@ -1,5 +1,7 @@
 package com.godaddy.icfp2017.services;
 
+import com.godaddy.icfp2017.models.River;
+import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.collect.ImmutableMap;
@@ -20,12 +22,12 @@ public class GameStrategy {
       .build();
 
   private final ImmutableMap<Algorithms, Double> minimumSpanningTreeStrategy = ImmutableMap.<Algorithms, Double>builder()
-      .put(Algorithms.AdjacentToMine, 0.8)
+      .put(Algorithms.AdjacentToMine, 0.25)
       .put(Algorithms.AdjacentToPath, 0.25)
       .put(Algorithms.ConnectedDecision, 0.25)
       .put(Algorithms.Connectedness, 0.25)
       .put(Algorithms.MineToMine, 1.0)
-      .put(Algorithms.MinimumSpanningTree, 0.8)
+      .put(Algorithms.MinimumSpanningTree, 1.0)
       .put(Algorithms.ScoringAlgo, 0.8)
       .put(Algorithms.EnemyPath, 0.25)
       .build();
@@ -45,24 +47,27 @@ public class GameStrategy {
     if (mstFinished(state)) {
       return pathExtendStrategy;
     }
-    if (!mineAdjacenciesExist(state)) {
+    if (minesConnected(state)) {
       return mineAcquireStrategy;
     }
 
     return minimumSpanningTreeStrategy;
   }
 
-  private boolean mineAdjacenciesExist(final State state) {
-    long mineAdjacencyCount = state
-        .getMines()
-        .stream()
-        .flatMap(mine -> state.getGraph()
-            .edgesOf(mine)
-            .stream()
-            .filter(river -> !river.isClaimed()))
-        .count();
-
-    return mineAdjacencyCount > 0;
+  private boolean minesConnected(final State state) {
+    if (state.getTotalClaimed() > state.getGraph().edgeSet().size() / 10) {
+      // Trying too long...
+      return true;
+    }
+    for (Site site: state.getMines()) {
+      boolean isAvailable = false;
+      for (River river: state.getGraph().edgesOf(site)) {
+        if (!river.isClaimed() && !site.isOwned()) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   private boolean mstFinished(final State state) {

@@ -139,13 +139,13 @@ public class State {
     return siteToMap;
   }
 
-  private int totalOwned;
+  private int totalClaimed;
 
-  public int getTotalOwned() {
-    return totalOwned;
+  public int getTotalClaimed() {
+    return totalClaimed;
   }
 
-  public void setTotalOwned(int totalOwned) {
-    this.totalOwned = totalOwned;
+  public void setTotalClaimed(int totalClaimed) {
+    this.totalClaimed = totalClaimed;
   }
 }
