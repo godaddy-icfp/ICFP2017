@@ -4,8 +4,10 @@ import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.Pair;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.jgrapht.GraphPath;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
@@ -24,6 +26,14 @@ public class MinePathsScoreAlgorithm extends BaseAlgorithm implements GraphAlgor
 
     final SimpleWeightedGraph<Site, River> graph = state.getGraph();
 
+
+    final DijkstraShortestPath<Site, River> shortestPath = new DijkstraShortestPath<>(graph);
+    final ImmutableSet<ShortestPathAlgorithm.SingleSourcePaths<Site, River>> shortestMinePaths = state
+        .getMines()
+        .stream()
+        .map(shortestPath::getPaths)
+        .collect(ImmutableSet.toImmutableSet());
+
     state.getMines()
          .forEach(mine -> {
            final HashSet<Integer> visted = Sets.newHashSet();
@@ -32,6 +42,8 @@ public class MinePathsScoreAlgorithm extends BaseAlgorithm implements GraphAlgor
            for (int i = 0; i < siteToMineDistance.length; i++) {
              siteToMineDistance[i] = Integer.MAX_VALUE;
            }
+
+           final ShortestPathAlgorithm.SingleSourcePaths<Site, River> pathSources = shortestPath.getPaths(mine);
 
            final int maxDistance = 6;
 
@@ -53,13 +65,13 @@ public class MinePathsScoreAlgorithm extends BaseAlgorithm implements GraphAlgor
                final Site targetSite = state.getSiteToMap().get(river.getTarget());
 
                if (site.getId() != sourceSite.getId()) {
-                 computeDistance(graph, mine, siteToMineDistance, sourceSite);
+                 computeDistance(pathSources, siteToMineDistance, sourceSite);
                  if (!visted.contains(sourceSite.getId()) && newDistance < maxDistance) {
                    queue.add(Pair.of(newDistance, sourceSite));
                  }
                }
                else {
-                 computeDistance(graph, mine, siteToMineDistance, targetSite);
+                 computeDistance(pathSources, siteToMineDistance, targetSite);
                  if (!visted.contains(targetSite.getId()) && newDistance < maxDistance) {
                    queue.add(Pair.of(newDistance, targetSite));
                  }
@@ -80,14 +92,11 @@ public class MinePathsScoreAlgorithm extends BaseAlgorithm implements GraphAlgor
   }
 
   private void computeDistance(
-      final SimpleWeightedGraph<Site, River> graph,
-      final Site mine,
-      final Integer[] siteToMineDistance, final Site targetSite) {
-    final GraphPath<Site, River> targetPath = DijkstraShortestPath.findPathBetween(graph,
-                                                                                   targetSite,
-                                                                                   mine);
+      final ShortestPathAlgorithm.SingleSourcePaths<Site, River> pathSource,
+      final Integer[] siteToMineDistance,
+      final Site targetSite) {
+    final GraphPath<Site, River> targetPath = pathSource.getPath(targetSite);
     final int targetLength = targetPath.getLength();
-    siteToMineDistance[targetSite.getId()] = Math.min(targetLength,
-                                                      siteToMineDistance[targetSite.getId()]);
+    siteToMineDistance[targetSite.getId()] = Math.min(targetLength, siteToMineDistance[targetSite.getId()]);
   }
 }
