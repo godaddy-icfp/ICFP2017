@@ -1,5 +1,6 @@
 package com.godaddy.icfp2017.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -31,22 +32,26 @@ public class State {
   private ImmutableMap<Integer, Site> siteToMap;
 
   public Long getLastTime(final Timeable algorithm) {
-    return lastTimes.get(algorithm.timeKey());
+    return getLastTimes().get(algorithm.timeKey());
   }
 
   public ConcurrentHashMap<String, Long> getLastTimes() {
+    // check to see if this is a restored state without any transients included
+    if (lastTimes == null) {
+      lastTimes = new ConcurrentHashMap<>();
+    }
+
     return lastTimes;
   }
 
   public State() {
-    lastTimes = new ConcurrentHashMap<>();
   }
 
   public void setLastTime(Timeable timeable, Long lastTime) {
-    this.lastTimes.put(timeable.timeKey(), lastTime);
+    getLastTimes().put(timeable.timeKey(), lastTime);
   }
 
-  @JsonProperty
+  @JsonIgnore
   private transient ConcurrentHashMap<String, Long> lastTimes;
 
   @JsonProperty

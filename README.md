@@ -17,6 +17,12 @@ Please use the issues tab for known actions that need work to ensure we have a g
 cat sampleSetupInput.json | java -jar build/libs/ICFP2017-1.0-SNAPSHOT-all.jar 
 ```
 
+## How to run in the lamduct offline simulator
+
+```bash
+lamduct --client-instance-timeout=60 --client-instance-logfile=/dev/stdout --log-level=3 --game-port=9017 ./run-offline.sh
+```
+
 ## How to run in online mode
 
 ```bash

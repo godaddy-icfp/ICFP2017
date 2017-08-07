@@ -200,7 +200,8 @@ public class GameLogic {
     //debug best river weighting
     double bestRiverWeight = currentState.getGraph().getEdgeWeight(bestRiver.get());
     debugStream.println(String.format("riverWeight: %s", bestRiverWeight));
-    debugStream.println(String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
+    debugStream.println(
+        String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
 
     // initialize the response
     return bestRiver
