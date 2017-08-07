@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @JsonSerialize(using = BinaryStateSerializer.class)
 @JsonDeserialize(using = BinaryStateDeserializer.class)
 public class State {
+  private static final long serialVersionUID = 42L;
+
   @JsonProperty
   private int punter;
 

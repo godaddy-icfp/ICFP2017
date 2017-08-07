@@ -40,7 +40,7 @@ public class GameLogic {
     final EnumSet<Algorithms> runAlgorithms = EnumSet.of(
         Algorithms.AdjacentToMine,
         Algorithms.AdjacentToPath,
-        Algorithms.ConnectedDecision,
+//        Algorithms.ConnectedDecision,
         Algorithms.Connectedness,
         Algorithms.EnemyPath,
         Algorithms.MineToMine,

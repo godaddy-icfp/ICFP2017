@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class River extends DefaultWeightedEdge implements Serializable {
+  private static final long serialVersionUID = 42L;
+
   @JsonProperty("source")
   private int source;
 
