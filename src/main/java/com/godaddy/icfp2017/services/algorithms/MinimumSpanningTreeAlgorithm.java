@@ -58,7 +58,7 @@ public class MinimumSpanningTreeAlgorithm extends BaseAlgorithm {
         new BoruvkaMinimumSpanningTree<>(subgraph);
 
     for (final River river : minimumSpanningTree.getSpanningTree().getEdges()) {
-      setter.apply(river, Weights.Desired);
+      setter.apply(river, Weights.Max);
     }
   }
 }
