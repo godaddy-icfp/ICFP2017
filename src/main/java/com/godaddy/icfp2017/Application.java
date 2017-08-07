@@ -85,9 +85,6 @@ class Application {
       e.printStackTrace();
     }
     finally {
-      if (gameDriver != null) {
-        gameDriver.close();
-      }
       if (communicationSocket != null) {
         communicationSocket.close();
       }
