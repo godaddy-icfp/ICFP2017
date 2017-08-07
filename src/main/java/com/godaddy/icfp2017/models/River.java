@@ -19,7 +19,7 @@ public class River extends DefaultWeightedEdge implements Serializable {
   private int target;
 
   @JsonIgnore
-  private final transient ConcurrentHashMap<Algorithms, Double> algorithmWeights = new ConcurrentHashMap<>();
+  private transient ConcurrentHashMap<Algorithms, Double> algorithmWeights;
 
   @JsonProperty("claimedBy")
   private int claimedBy = -1;
@@ -60,6 +60,10 @@ public class River extends DefaultWeightedEdge implements Serializable {
   }
 
   public ConcurrentHashMap<Algorithms, Double> getAlgorithmWeights() {
+    if (algorithmWeights == null) {
+      algorithmWeights = new ConcurrentHashMap<>();
+    }
+
     return algorithmWeights;
   }
 

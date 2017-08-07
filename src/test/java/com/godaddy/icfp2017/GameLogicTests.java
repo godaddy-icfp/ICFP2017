@@ -8,12 +8,15 @@ import com.godaddy.icfp2017.models.SetupP2S;
 import com.godaddy.icfp2017.models.SetupS2P;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
+import com.godaddy.icfp2017.services.GameAlgorithms;
 import com.godaddy.icfp2017.services.GameLogic;
 import com.godaddy.icfp2017.services.GraphTests;
 import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.Weights;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
 
@@ -44,7 +47,8 @@ public class GameLogicTests {
     GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadSetup());
     State state = setup.getState();
-    final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(Algorithms.AdjacentToMine);
+    final GameAlgorithms gameAlgorithms = new GameAlgorithms(new PrintStream(new ByteArrayOutputStream()));
+    final GraphAlgorithm graphAlgorithm = gameAlgorithms.getGraphAlgorithm(Algorithms.AdjacentToMine);
     graphAlgorithm.run(Algorithms.AdjacentToMine, state);
 
     validateTimes(state);
@@ -91,9 +95,10 @@ public class GameLogicTests {
     GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadBigSetup());
     State state = setup.getState();
+    final GameAlgorithms gameAlgorithms = new GameAlgorithms(new PrintStream(new ByteArrayOutputStream()));
     for (Algorithms algorithm : Algorithms.values()) {
-      if (impl.isUsingAlgorithm(algorithm)) {
-        final GraphAlgorithm graphAlgorithm = impl.getGraphAlgorithm(algorithm);
+      if (gameAlgorithms.isUsingAlgorithm(algorithm)) {
+    final GraphAlgorithm graphAlgorithm = gameAlgorithms.getGraphAlgorithm(algorithm);
         // Remove all current weights
         state.getGraph().edgeSet().forEach(river -> river.getAlgorithmWeights().clear());
 

@@ -11,7 +11,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Queue;
 
-public class GameDriver implements AutoCloseable {
+public class GameDriver {
 
   private final StateMachine stateMachine;
   private final PrintStream debugStream;
@@ -74,9 +74,8 @@ public class GameDriver implements AutoCloseable {
       }
 
       @Override
-      public Void timeout() {
+      public void timeout() {
         debugStream.println("Got a timeout message");
-        return null;
       }
 
       @Override
@@ -85,11 +84,6 @@ public class GameDriver implements AutoCloseable {
         return null;
       }
     });
-  }
-
-  @Override
-  public void close() throws Exception {
-    gameLogic.close();
   }
 
   public void dumpCapture(final PrintStream output) {

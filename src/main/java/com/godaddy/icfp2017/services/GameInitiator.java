@@ -1,8 +1,10 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
+import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
@@ -13,29 +15,37 @@ import java.util.function.Function;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
-public class GameLogic {
+public class GameInitiator {
 
-  private GameInitiator gameInitiator;
-
-  private State currentState;
   private final PrintStream debugStream;
 
-  public GameLogic(final PrintStream debugStream) {
-    this.gameInitiator = new GameInitiator(debugStream);
+  public GameInitiator(final PrintStream debugStream) {
     this.debugStream = debugStream;
   }
 
-  public SetupP2S setup(final SetupS2P setup) {
-    this.currentState = gameInitiator.createState(setup);
-    // respond
-    SetupP2S response = new SetupP2S();
-    response.setReady(setup.getPunter());
-    response.setState(this.currentState);
-    return response;
+  public State createState(SetupS2P setup) {
+    final State state = new State();
+
+    state.setPunter(setup.getPunter());
+    state.setPunters(setup.getPunters());
+
+    final GraphConstruction graphConstruction = buildGraphs(setup);
+    state.setGraph(graphConstruction.graph);
+    state.setGraphOfEnemyMoves(graphConstruction.graphOfEnemyMoves);
+    state.setMines(graphConstruction.mines);
+    state.setSiteToMap(graphConstruction.siteToMap);
+    state.setShortestPaths(new FloydWarshallShortestPaths<>(graphConstruction.graph));
+
+    new MineToMinePathAnalyzer().analyze(state);
+    RankedPathsCalculator calculator = new RankedPathsCalculator(state);
+    state.setRankedPaths(calculator.calculate());
+
+    debugStream.println(String.format("rankedPaths: %s", state.getRankedPaths().toString()));
+
+    return state;
   }
 
-  static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(
-      final SetupS2P setup) {
+  private static GraphConstruction buildGraphs(final SetupS2P setup) {
     final Map map = setup.getMap();
     final List<Site> sites = map.getSites();
     final List<River> rivers = map.getRivers();
@@ -47,9 +57,14 @@ public class GameLogic {
     final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builder =
         SimpleWeightedGraph.builder(new LambdaEdgeFactory());
 
+    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?>
+        builderOfEnemyMoves =
+        SimpleWeightedGraph.builder(new LambdaEdgeFactory());
+
     for (final Site site : sites) {
       site.setMine(mines.contains(site.getId()));
       builder.addVertex(site);
+      builderOfEnemyMoves.addVertex(site);
     }
 
     for (final River river : rivers) {
@@ -59,12 +74,10 @@ public class GameLogic {
           river);
     }
 
-    return Pair.of(
+    return new GraphConstruction(
         mines.stream().map(siteById::get).collect(toImmutableSet()),
-        builder.build());
-  }
-
-  public GameplayP2S move(final GameplayS2P move) {
-    return new GameMove(this.currentState, this.debugStream).getMove(move);
+        builder.build(),
+        builderOfEnemyMoves.build(),
+        siteById);
   }
 }

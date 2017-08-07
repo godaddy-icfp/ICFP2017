@@ -20,7 +20,7 @@ final class StateMachine implements AutoCloseable {
     void debug(String s);
     SetupP2S setup(final SetupS2P message);
     GameplayP2S gameplay(final GameplayS2P message);
-    T timeout();
+    void timeout();
     T stop(final GameEndServerToPlayer message);
   }
 
@@ -74,7 +74,7 @@ final class StateMachine implements AutoCloseable {
         send(handler.setup(serverToPunter));
         handler.capture(serverToPunter);
       } else if (jsonNode.has("timeout")) {
-        return handler.timeout();
+        handler.timeout();
       } else if (jsonNode.has("stop")) {
         final GameEndServerToPlayer serverToPlayer = MAPPER.treeToValue(jsonNode, GameEndServerToPlayer.class);
         handler.capture(serverToPlayer);
