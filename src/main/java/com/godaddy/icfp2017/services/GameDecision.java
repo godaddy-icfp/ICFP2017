@@ -58,7 +58,9 @@ public class GameDecision {
             .getOrDefault(algorithm.getKey(), Weights.Identity) * algorithm.getValue();
       }
 
-      if (river.getSource() == 18 && river.getTarget() == 26) {
+      if ((river.getSource() == 30 && river.getTarget() == 33) ||
+          (river.getSource() == 7 && river.getTarget() == 13) ||
+          (river.getSource() == 20 && river.getTarget() == 29)) {
         debugStream.println(String.format("optimal: %s", score));
         debugStream.println(String.format("optimalAlgoWeights: %s", river.getAlgorithmWeights().toString()));
       }

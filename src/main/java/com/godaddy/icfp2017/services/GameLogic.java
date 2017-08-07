@@ -35,7 +35,6 @@ public class GameLogic {
     final EnumSet<Algorithms> gameAlgos = EnumSet.of(
         Algorithms.AdjacentToMine,
         Algorithms.AdjacentToPath,
-        Algorithms.ConnectedDecision,
         Algorithms.Connectedness,
         Algorithms.MineToMine,
         Algorithms.MinimumSpanningTree);
