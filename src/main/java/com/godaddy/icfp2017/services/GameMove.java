@@ -41,7 +41,11 @@ public class GameMove {
     Long startTime = System.currentTimeMillis();
 
     final State moveState = getState(move);
-
+    for (final River river : moveState.getGraph().edgeSet()) {
+      if (river.getAlgorithmWeights() != null) {
+        river.getAlgorithmWeights().clear();
+      }
+    }
 
     zeroClaimedEdges(move.getPreviousMoves(),
                      moveState.getGraph(),
