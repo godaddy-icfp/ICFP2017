@@ -102,7 +102,7 @@ public class GameAlgorithms implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     executorService.shutdown();
   }
 }
