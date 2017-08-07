@@ -14,7 +14,6 @@ import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import net.jpountz.lz4.LZ4BlockInputStream;
 import org.testng.annotations.Test;
 
@@ -24,9 +23,8 @@ import java.io.PrintStream;
 import java.util.Base64;
 import java.util.EnumSet;
 
-@Ignore
 public class DebugAlgorithm {
-  @Test
+  @Test(enabled = false)
   public void debug_algo() throws Exception {
     final State state = rehydrateState();
     final GameplayS2P moves = loadMoves();
