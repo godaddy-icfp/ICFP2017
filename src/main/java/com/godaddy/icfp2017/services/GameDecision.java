@@ -6,6 +6,7 @@ import com.godaddy.icfp2017.models.Pass;
 import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.PrintStream;
 import java.util.Optional;
@@ -23,9 +24,14 @@ public class GameDecision {
 
     //debug best river weighting
     double bestRiverWeight = state.getGraph().getEdgeWeight(bestRiver.get());
-    this.debugStream.println(String.format("riverWeight: %s", bestRiverWeight));
-    this.debugStream.println(
-        String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
+    debugStream.println(String.format("riverWeight: %s", bestRiverWeight));
+    debugStream.println(String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
+    debugStream.println(String.format("mine2mine: %s", state.getMineToMinePaths().toString()));
+    final ImmutableList<River> ownedRivers = state.getGraph().edgeSet()
+        .stream()
+        .filter(r -> r.getClaimedBy() == state.getPunter())
+        .collect(ImmutableList.toImmutableList());
+    debugStream.println(String.format("owned: %s", ownedRivers.toString()));
 
     // initialize the response
     GameplayP2S response = bestRiver
@@ -62,6 +68,10 @@ public class GameDecision {
           .mapToDouble(e -> e.getValue() * algorithmValues.get(e.getKey()))
           .reduce(1.0, (x, y) -> x * y);
       state.getGraph().setEdgeWeight(river, weight);
+      if (river.getSource() == 18 && river.getTarget() == 26) {
+        debugStream.println(String.format("optimal: %s", weight));
+        debugStream.println(String.format("optimalAlgoWeights: %s", river.getAlgorithmWeights().toString()));
+      }
       if (!river.isClaimed() && (weight > bestWeight)) {
         bestWeight = weight;
         bestRiver = river;

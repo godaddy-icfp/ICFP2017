@@ -11,7 +11,7 @@ public class GameLogic {
   private final PrintStream debugStream;
 
   public GameLogic(final PrintStream debugStream) {
-    this.gameInitiator = new GameInitiator();
+    this.gameInitiator = new GameInitiator(debugStream);
     this.debugStream = debugStream;
   }
 

@@ -1,24 +1,27 @@
 package com.godaddy.icfp2017.services;
 
-import static com.google.common.collect.ImmutableMap.toImmutableMap;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
-
-import com.godaddy.icfp2017.models.Map;
-import com.godaddy.icfp2017.models.River;
-import com.godaddy.icfp2017.models.SetupP2S;
-import com.godaddy.icfp2017.models.SetupS2P;
-import com.godaddy.icfp2017.models.Site;
-import com.godaddy.icfp2017.models.State;
+import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
-import java.util.function.Function;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
+import java.io.PrintStream;
+import java.util.List;
+import java.util.function.Function;
+
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
+
 public class GameInitiator {
+
+  private final PrintStream debugStream;
+
+  public GameInitiator(final PrintStream debugStream) {
+    this.debugStream = debugStream;
+  }
 
   public State createState(SetupS2P setup) {
     final State state = new State();
@@ -36,6 +39,8 @@ public class GameInitiator {
     new MineToMinePathAnalyzer().analyze(state);
     RankedPathsCalculator calculator = new RankedPathsCalculator(state);
     state.setRankedPaths(calculator.calculate());
+
+    debugStream.println(String.format("rankedPaths: %s", state.getRankedPaths().toString()));
 
     return state;
   }
