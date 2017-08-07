@@ -24,7 +24,7 @@ import java.util.Base64;
 import java.util.EnumSet;
 
 public class DebugAlgorithm {
-  @Test(enabled = false)
+  @Test(enabled = true)
   public void debug_algo() throws Exception {
     final State state = rehydrateState();
     final GameplayS2P moves = loadMoves();
