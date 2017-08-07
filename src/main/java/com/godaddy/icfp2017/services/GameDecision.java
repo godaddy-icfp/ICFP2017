@@ -1,6 +1,10 @@
 package com.godaddy.icfp2017.services;
 
-import com.godaddy.icfp2017.models.*;
+import com.godaddy.icfp2017.models.Claim;
+import com.godaddy.icfp2017.models.GameplayP2S;
+import com.godaddy.icfp2017.models.Pass;
+import com.godaddy.icfp2017.models.River;
+import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -43,7 +47,7 @@ public class GameDecision {
     return response;
   }
 
-  private Optional<River> computeWeightOnGraph(
+  protected Optional<River> computeWeightOnGraph(
       final State state,
       final ImmutableMap<Algorithms, Double> algorithmValues) {
     // Pick any river
@@ -54,8 +58,8 @@ public class GameDecision {
       double score = 1.0;
       for (Map.Entry<Algorithms, Double> algorithm : algorithmValues.entrySet()) {
         score *= river
-            .getAlgorithmWeights()
-            .getOrDefault(algorithm.getKey(), Weights.Identity) * algorithm.getValue();
+                     .getAlgorithmWeights()
+                     .getOrDefault(algorithm.getKey(), Weights.Identity) * algorithm.getValue();
       }
 
       if ((river.getSource() == 30 && river.getTarget() == 33) ||
@@ -69,20 +73,24 @@ public class GameDecision {
         bestRiver = river;
       }
     }
+    debugWeights(state, bestRiver, bestScore);
 
+
+    // sometimes we get called and don't produce a river (because they all score 0.0)
+    // while we can do a better job, let's just send a pass for now to avoid crashing
+    return Optional.ofNullable(bestRiver);
+  }
+
+  protected void debugWeights(final State state, final River bestRiver, final double bestScore) {
     //debug best river weighting
     //double bestRiverWeight = state.getGraph().getEdgeWeight(bestRiver);
     debugStream.println(String.format("riverWeight: %s", bestScore));
     debugStream.println(String.format("algoWeights: %s", bestRiver.getAlgorithmWeights().toString()));
     debugStream.println(String.format("mine2mine: %s", state.getMineToMinePaths().toString()));
     final ImmutableList<River> ownedRivers = state.getGraph().edgeSet()
-        .stream()
-        .filter(r -> r.getClaimedBy() == state.getPunter())
-        .collect(ImmutableList.toImmutableList());
+                                                  .stream()
+                                                  .filter(r -> r.getClaimedBy() == state.getPunter())
+                                                  .collect(ImmutableList.toImmutableList());
     debugStream.println(String.format("owned: %s", ownedRivers.toString()));
-
-    // sometimes we get called and don't produce a river (because they all score 0.0)
-    // while we can do a better job, let's just send a pass for now to avoid crashing
-    return Optional.ofNullable(bestRiver);
   }
 }

@@ -39,7 +39,7 @@ public class StrategyAnalyzer extends BaseAnalyzer {
         site.setRadiusTotalConnectedRivers(site.getTotalConnectedRivers());
       }
     }
-    state.setTotalOwned(totalClaimed);
+    state.setTotalClaimed(totalClaimed);
   }
 
   private void visitRadius(State state, Site site, StatisticsAggregator aggregator, final int depth) {

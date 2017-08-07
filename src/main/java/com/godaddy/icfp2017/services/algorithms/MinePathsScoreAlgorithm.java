@@ -45,7 +45,7 @@ public class MinePathsScoreAlgorithm extends BaseAlgorithm implements GraphAlgor
 
            final ShortestPathAlgorithm.SingleSourcePaths<Site, River> pathSources = shortestPath.getPaths(mine);
 
-           final int maxDistance = 6;
+           final int maxDistance = 7;
 
            PriorityQueue<Pair<Integer, Site>> queue = new PriorityQueue<>(Comparator.comparing(p -> p.left));
 

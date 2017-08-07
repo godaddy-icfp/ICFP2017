@@ -7,14 +7,17 @@ import com.godaddy.icfp2017.models.SetupS2P;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.godaddy.icfp2017.services.algorithms.EnemyPathWeightAlgorithm;
 import java.io.PrintStream;
 import java.util.EnumSet;
+import java.util.Optional;
 
 public class GameLogic {
 
   private GameInitiator gameInitiator;
 
-  private State currentState;
+  private State previousOnlineState;
   private final PrintStream debugStream;
 
   public GameLogic(final PrintStream debugStream) {
@@ -23,24 +26,48 @@ public class GameLogic {
   }
 
   public SetupP2S setup(final SetupS2P setup) {
-    this.currentState = gameInitiator.createState(setup);
+    this.previousOnlineState = gameInitiator.createState(setup);
     // respond
     SetupP2S response = new SetupP2S();
     response.setReady(setup.getPunter());
-    response.setState(this.currentState);
+    response.setState(this.previousOnlineState);
     return response;
   }
 
   public GameplayP2S move(final GameplayS2P move) {
-    final EnumSet<Algorithms> gameAlgos = EnumSet.of(
+    final long startTime = System.currentTimeMillis();
+
+    final EnumSet<Algorithms> runAlgorithms = EnumSet.of(
         Algorithms.AdjacentToMine,
         Algorithms.AdjacentToPath,
         Algorithms.Connectedness,
+        Algorithms.EnemyPath,
         Algorithms.MineToMine,
-        Algorithms.MinimumSpanningTree);
+        Algorithms.MinimumSpanningTree,
+        Algorithms.ScoringAlgo);
 
-    try (final GameAlgorithms algorithms = new GameAlgorithms(debugStream, gameAlgos)) {
-      return new GameMove(this.currentState, debugStream, algorithms).getMove(move);
+
+    try (final GameAlgorithms algorithms = createGameAlgorithms(runAlgorithms)) {
+      return createGameMoves(getMoveState(move), debugStream, algorithms).getMove(startTime, move);
     }
+  }
+
+
+  private State getMoveState(GameplayS2P move) {
+    final State currentState = Optional.ofNullable(move.getPreviousState())
+                                       .orElseGet(() -> Optional.ofNullable(this.previousOnlineState)
+                                                                .orElseThrow(IllegalStateException::new));
+    return currentState;
+  }
+
+  protected GameAlgorithms createGameAlgorithms(final EnumSet<Algorithms> selectedAlgorithms) {
+    return new GameAlgorithms(debugStream, selectedAlgorithms);
+  }
+
+  protected GameMove createGameMoves(
+      final State currentState,
+      final PrintStream debugStream,
+      final GameAlgorithms algorithms) {
+    return new GameMove(currentState, debugStream, algorithms);
   }
 }
