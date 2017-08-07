@@ -1,14 +1,8 @@
 package com.godaddy.icfp2017.services;
 
-import com.godaddy.icfp2017.models.GameplayP2S;
-import com.godaddy.icfp2017.models.GameplayS2P;
-import com.godaddy.icfp2017.models.SetupP2S;
-import com.godaddy.icfp2017.models.SetupS2P;
-import com.godaddy.icfp2017.models.State;
+import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
-import com.godaddy.icfp2017.services.algorithms.EnemyPathWeightAlgorithm;
 import java.io.PrintStream;
 import java.util.EnumSet;
 import java.util.Optional;
