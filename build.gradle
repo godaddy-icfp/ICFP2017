@@ -50,6 +50,13 @@ jar {
     }
 }
 
+apply plugin: 'java' // adds 'test' task
+
+test {
+    // enable TestNG support (default is JUnit)
+    useTestNG()
+}
+
 run {
     args '-mode=online', '-host=punter.inf.ed.ac.uk', '-port=9004'
 }
