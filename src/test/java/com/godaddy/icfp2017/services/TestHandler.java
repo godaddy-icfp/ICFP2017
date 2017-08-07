@@ -14,7 +14,6 @@ class TestHandler implements StateMachine.Handler<Void> {
 
   @Override
   public void debug(final String s) {
-
   }
 
   @Override
@@ -28,8 +27,7 @@ class TestHandler implements StateMachine.Handler<Void> {
   }
 
   @Override
-  public Void timeout() {
-    return null;
+  public void timeout() {
   }
 
   @Override

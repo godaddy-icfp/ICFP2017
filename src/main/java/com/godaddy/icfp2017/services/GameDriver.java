@@ -74,9 +74,8 @@ public class GameDriver implements AutoCloseable {
       }
 
       @Override
-      public Void timeout() {
+      public void timeout() {
         debugStream.println("Got a timeout message");
-        return null;
       }
 
       @Override
