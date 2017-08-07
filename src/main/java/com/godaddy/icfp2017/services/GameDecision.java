@@ -1,14 +1,12 @@
 package com.godaddy.icfp2017.services;
 
-import com.godaddy.icfp2017.models.Claim;
-import com.godaddy.icfp2017.models.GameplayP2S;
-import com.godaddy.icfp2017.models.Pass;
-import com.godaddy.icfp2017.models.River;
-import com.godaddy.icfp2017.models.State;
+import com.godaddy.icfp2017.models.*;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Optional;
 
 public class GameDecision {
@@ -51,17 +49,6 @@ public class GameDecision {
     // Compute all the weight
     Optional<River> bestRiver = this.computeWeightOnGraph(state, strategyState);
 
-    //debug best river weighting
-    double bestRiverWeight = state.getGraph().getEdgeWeight(bestRiver.get());
-    debugStream.println(String.format("riverWeight: %s", bestRiverWeight));
-    debugStream.println(String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
-    debugStream.println(String.format("mine2mine: %s", state.getMineToMinePaths().toString()));
-    final ImmutableList<River> ownedRivers = state.getGraph().edgeSet()
-        .stream()
-        .filter(r -> r.getClaimedBy() == state.getPunter())
-        .collect(ImmutableList.toImmutableList());
-    debugStream.println(String.format("owned: %s", ownedRivers.toString()));
-
     // initialize the response
     GameplayP2S response = bestRiver
         .map(river -> {
@@ -90,22 +77,36 @@ public class GameDecision {
       final ImmutableMap<Algorithms, Double> algorithmValues) {
     // Pick any river
     River bestRiver = null;
-    double bestWeight = 0.0;
+    double bestScore = 0.0;
 
     for (River river : state.getGraph().edgeSet()) {
-      double weight = river.getAlgorithmWeights().entrySet().stream()
-          .mapToDouble(e -> e.getValue() * algorithmValues.get(e.getKey()))
-          .reduce(1.0, (x, y) -> x * y);
-      state.getGraph().setEdgeWeight(river, weight);
+      double score = 1.0;
+      for (Map.Entry<Algorithms, Double> algorithm : algorithmValues.entrySet()) {
+        score *= river
+            .getAlgorithmWeights()
+            .getOrDefault(algorithm.getKey(), Weights.Identity) * algorithm.getValue();
+      }
+
       if (river.getSource() == 18 && river.getTarget() == 26) {
-        debugStream.println(String.format("optimal: %s", weight));
+        debugStream.println(String.format("optimal: %s", score));
         debugStream.println(String.format("optimalAlgoWeights: %s", river.getAlgorithmWeights().toString()));
       }
-      if (!river.isClaimed() && (weight > bestWeight)) {
-        bestWeight = weight;
+      if (!river.isClaimed() && (score > bestScore)) {
+        bestScore = score;
         bestRiver = river;
       }
     }
+
+    //debug best river weighting
+    //double bestRiverWeight = state.getGraph().getEdgeWeight(bestRiver);
+    debugStream.println(String.format("riverWeight: %s", bestScore));
+    debugStream.println(String.format("algoWeights: %s", bestRiver.getAlgorithmWeights().toString()));
+    debugStream.println(String.format("mine2mine: %s", state.getMineToMinePaths().toString()));
+    final ImmutableList<River> ownedRivers = state.getGraph().edgeSet()
+        .stream()
+        .filter(r -> r.getClaimedBy() == state.getPunter())
+        .collect(ImmutableList.toImmutableList());
+    debugStream.println(String.format("owned: %s", ownedRivers.toString()));
 
     // sometimes we get called and don't produce a river (because they all score 0.0)
     // while we can do a better job, let's just send a pass for now to avoid crashing
