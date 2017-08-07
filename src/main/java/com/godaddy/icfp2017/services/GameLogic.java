@@ -1,34 +1,24 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
-import com.godaddy.icfp2017.services.algorithms.AdjacentToMinesAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AdjacentToPathAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AlgorithmFactory;
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
-import com.godaddy.icfp2017.services.algorithms.ConnectedDecisionAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.ConnectednessAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.MineToMineAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.*;
 import com.godaddy.icfp2017.services.analysis.Analyzers;
 import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
 import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
 import com.godaddy.icfp2017.services.analysis.SiteConnectivityAnalyzer;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
@@ -107,6 +97,8 @@ public class GameLogic implements AutoCloseable {
     RankedPathsCalculator calculator = new RankedPathsCalculator(state);
     state.setRankedPaths(calculator.calculate());
 
+    debugStream.println(String.format("rankedPaths: %s", state.getRankedPaths().toString()));
+
     this.currentState = state;
 
     return response;
@@ -129,6 +121,12 @@ public class GameLogic implements AutoCloseable {
                            .mapToDouble(e -> e.getValue() * algorithmValues.get(e.getKey()))
                            .reduce(1.0, (x, y) -> x * y);
       state.getGraph().setEdgeWeight(river, weight);
+
+      if (river.getSource() == 18 && river.getTarget() == 26) {
+        debugStream.println(String.format("optimal: %s", weight));
+        debugStream.println(String.format("optimalAlgoWeights: %s", river.getAlgorithmWeights().toString()));
+      }
+
       if (!river.isClaimed() && (weight > bestWeight)) {
         bestWeight = weight;
         bestRiver = river;
@@ -234,6 +232,12 @@ public class GameLogic implements AutoCloseable {
     double bestRiverWeight = currentState.getGraph().getEdgeWeight(bestRiver.get());
     debugStream.println(String.format("riverWeight: %s", bestRiverWeight));
     debugStream.println(String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
+    debugStream.println(String.format("mine2mine: %s", currentState.getMineToMinePaths().toString()));
+    final ImmutableList<River> ownedRivers = currentState.getGraph().edgeSet()
+        .stream()
+        .filter(r -> r.getClaimedBy() == currentState.getPunter())
+        .collect(ImmutableList.toImmutableList());
+    debugStream.println(String.format("owned: %s", ownedRivers.toString()));
 
     // initialize the response
     return bestRiver
