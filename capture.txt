@@ -1,0 +1,5 @@
+java.lang.IllegalStateException: Terminal message not received
+	at com.godaddy.icfp2017.services.StateMachine.gameplay(StateMachine.java:87)
+	at com.godaddy.icfp2017.services.StateMachine.handshake(StateMachine.java:59)
+	at com.godaddy.icfp2017.services.GameDriver.run(GameDriver.java:53)
+	at com.godaddy.icfp2017.Application.main(Application.java:77)

@@ -37,8 +37,9 @@ public class GameLogic {
         Algorithms.Connectedness,
         Algorithms.EnemyPath,
         Algorithms.MineToMine,
-        Algorithms.MinimumSpanningTree,
-        Algorithms.PathExtension);
+        Algorithms.MinimumSpanningTree
+        // , Algorithms.PathExtension
+        );
 
 
     try (final GameAlgorithms algorithms = createGameAlgorithms(runAlgorithms)) {
