@@ -50,7 +50,7 @@ public class GameAlgorithms {
         } catch (Exception e1) {
           this.debugStream.print(algorithm);
           this.debugStream.print(" Error: ");
-          this.debugStream.println(e1.toString());
+          e1.printStackTrace(this.debugStream);
         } finally {
           completeLatch.countDown();
         }
