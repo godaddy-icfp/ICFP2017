@@ -462,7 +462,7 @@ public class GameLogic implements AutoCloseable {
              graph.removeEdge(edge);
 
              // but add this edge to the enemy moves
-             System.out.println("Add enemy edge " + edge.toString());
+             debugStream.println("Add enemy edge " + edge.toString());
              addEnemyEdge(state, graphOfEnemyMoves, sourceVertex, targetVertex, edge, claim.getPunter());
            } else {
              // if we own the edge mark it as weight 0, it's free to use

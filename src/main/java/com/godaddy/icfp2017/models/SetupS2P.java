@@ -1,9 +1,11 @@
 package com.godaddy.icfp2017.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
+@JsonIgnoreProperties({"state"}) // offline mode includes an empty state object
 public class SetupS2P implements ServerToPlayer {
   @JsonProperty("punter")
   private int punter;
