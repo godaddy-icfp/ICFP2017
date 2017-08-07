@@ -1,6 +1,11 @@
 package com.godaddy.icfp2017.services.analysis;
 
-public enum Analyzers {
+public enum Analyzers implements Timeable {
   SiteConnectivity,
-  MineToMinePath
+  MineToMinePath;
+
+  @Override
+  public String timeKey() {
+    return "Analyzers: " + name();
+  }
 }

@@ -1,7 +1,14 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
-import com.godaddy.icfp2017.services.algorithms.*;
+import com.godaddy.icfp2017.services.algorithms.AdjacentToMinesAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.AdjacentToPathAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.AlgorithmFactory;
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.godaddy.icfp2017.services.algorithms.ConnectedDecisionAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.ConnectednessAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.MineToMineAlgorithm;
 import com.godaddy.icfp2017.services.analysis.Analyzers;
 import com.godaddy.icfp2017.services.analysis.GraphAnalyzer;
 import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
@@ -35,17 +42,18 @@ public class GameLogic implements AutoCloseable {
       ImmutableMap.of(
           Analyzers.SiteConnectivity, new SiteConnectivityAnalyzer(),
           Analyzers.MineToMinePath, new MineToMinePathAnalyzer()
-      );
+                     );
 
   private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
-      ImmutableMap.of(
-          Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new,
-          Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new,
-          Algorithms.ConnectedDecision, ConnectedDecisionAlgorithm::new,
-          Algorithms.Connectedness, ConnectednessAlgorithm::new,
-          Algorithms.MineToMine, MineToMineAlgorithm::new
-          //          Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new
-                     );
+      ImmutableMap.<Algorithms, AlgorithmFactory>builder()
+          .put(Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new)
+          .put(Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new)
+          .put(Algorithms.ConnectedDecision, ConnectedDecisionAlgorithm::new)
+          .put(Algorithms.Connectedness, ConnectednessAlgorithm::new)
+          .put(Algorithms.MineToMine, MineToMineAlgorithm::new)
+          //.put(Algorithms.ScoringAlgo, MinePathsScoreAlgorithm::new)
+          //.put(Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new)
+          .build();
 
   // These are constants that value algorithms over all rivers
   // It allows us to select which algorithms are valuable (and which are not) for this particular move
@@ -56,6 +64,7 @@ public class GameLogic implements AutoCloseable {
       .put(Algorithms.Connectedness, 0.25)
       .put(Algorithms.MineToMine, 1.0)
       .put(Algorithms.MinimumSpanningTree, 0.8)
+      .put(Algorithms.ScoringAlgo, 0.8)
       .build();
 
   private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.<Algorithms, Double>builder()
@@ -65,6 +74,7 @@ public class GameLogic implements AutoCloseable {
       .put(Algorithms.Connectedness, 0.5)
       .put(Algorithms.MineToMine, 1.0)
       .put(Algorithms.MinimumSpanningTree, 1.0)
+      .put(Algorithms.ScoringAlgo, 1.0)
       .build();
 
   private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
@@ -171,7 +181,8 @@ public class GameLogic implements AutoCloseable {
     final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builder =
         SimpleWeightedGraph.builder(new LambdaEdgeFactory());
 
-    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builderOfEnemyMoves =
+    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?>
+        builderOfEnemyMoves =
         SimpleWeightedGraph.builder(new LambdaEdgeFactory());
 
     for (final Site site : sites) {
@@ -195,6 +206,7 @@ public class GameLogic implements AutoCloseable {
   }
 
   private final Long MAX_TURN_TIME = 900L;
+
   public GameplayP2S move(
       final GameplayS2P move) {
     Long startTime = System.currentTimeMillis();
@@ -256,7 +268,7 @@ public class GameLogic implements AutoCloseable {
 
   private void runAnalyzers(State currentState) {
     analyzers.keySet().forEach(key -> {
-      analyzers.get(key).run(key.toString(), currentState);
+      analyzers.get(key).run(key, currentState);
     });
   }
 
@@ -264,7 +276,10 @@ public class GameLogic implements AutoCloseable {
     final State currentState = Optional.ofNullable(move.getPreviousState())
                                        .orElseGet(() -> Optional.ofNullable(this.currentState)
                                                                 .orElseThrow(IllegalStateException::new));
-    zeroClaimedEdges(move.getPreviousMoves(), currentState.getGraph(), currentState.getGraphOfEnemyMoves(), currentState);
+    zeroClaimedEdges(move.getPreviousMoves(),
+                     currentState.getGraph(),
+                     currentState.getGraphOfEnemyMoves(),
+                     currentState);
     return currentState;
   }
 
@@ -292,7 +307,7 @@ public class GameLogic implements AutoCloseable {
     final GraphAlgorithm graphAlgorithm = getGraphAlgorithm(algorithm);
     executorService.submit(() -> {
       try {
-        graphAlgorithm.run(algorithm.toString(), state);
+        graphAlgorithm.run(algorithm, state);
       }
       catch (Exception e) {
         debugStream.print(algorithm);
@@ -359,7 +374,8 @@ public class GameLogic implements AutoCloseable {
     }
 
     // TODO:
-    // We have to propagate weights collected from rivers connected to source to all rivers connected to target (including source site)
+    // We have to propagate weights collected from rivers connected to source to all rivers connected to target
+    // (including source site)
     // And vice versa
 
     // Add enemy moves, and update the path length
@@ -380,7 +396,7 @@ public class GameLogic implements AutoCloseable {
            final Site sourceVertex = state.getSiteToMap().get(claim.getSource());
            final Site targetVertex = state.getSiteToMap().get(claim.getTarget());
            final River edge = Optional.ofNullable(graph.getEdge(sourceVertex, targetVertex))
-               .orElseGet(() -> graph.getEdge(targetVertex, sourceVertex));
+                                      .orElseGet(() -> graph.getEdge(targetVertex, sourceVertex));
            if (edge == null) {
              return;
            }
@@ -395,7 +411,8 @@ public class GameLogic implements AutoCloseable {
              // but add this edge to the enemy moves
              System.out.println("Add enemy edge " + edge.toString());
              addEnemyEdge(graphOfEnemyMoves, sourceVertex, targetVertex, edge, claim.getPunter());
-           } else {
+           }
+           else {
              // if we own the edge mark it as weight 0, it's free to use
              graph.setEdgeWeight(edge, 0.0);
            }

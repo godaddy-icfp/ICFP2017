@@ -35,7 +35,7 @@ const colours =
         "#9edae5"];
 
 function getPunterColour(punter) {
-    if(punterID == punter) {
+    if (punterID == punter) {
         return "#bada55"
     }
     return colours[punter % colours.length];
@@ -150,6 +150,8 @@ function logRelay(msg) {
 }
 
 function replayLog() {
+    messages = [];
+    position = 0;
     turnNumber = 0;
     var log = document.getElementById("replayLog");
     var value = log.value;
@@ -159,6 +161,31 @@ function replayLog() {
             processMessage(message);
         }
     });
+}
+
+var position = 0,
+    messages = [];
+
+function startReplay() {
+    turnNumber = 0;
+    var log = document.getElementById("replayLog");
+    var value = log.value;
+    var split = value.split(/\n/g);
+    messages = split;
+    position = 0;
+    started = true;
+}
+
+function nextMessage() {
+    processMessage(messages[position++]);
+}
+
+function next20() {
+    for (let i = 0; i < 20; i++) {
+        processMessage(messages[position + i]);
+    }
+
+    position += 20;
 }
 
 var turnNumber = 0,
@@ -190,7 +217,7 @@ function processMessage(message) {
         } else if (msg.stop !== undefined) {
             handleIncomingMoves(msg.stop.moves);
             printFinalScores(msg.stop.scores);
-        } else if(msg.claim !== undefined) {
+        } else if (msg.claim !== undefined) {
             logInfo("made our move of: " + JSON.stringify(msg.claim));
             handleIncomingMove(msg);
         } else {
@@ -199,7 +226,7 @@ function processMessage(message) {
     } catch (e) { // other message from the server
         console.log(e);
         if (message.constructor == String) {
-            logRelay(message.data);
+            logRelay(message);
         } else {
             logError("received unknown message from relay.");
         }
@@ -301,7 +328,7 @@ function handlePass() {
 
 function bindCoreHandlers() {
     cy.edges().on("mouseover", function (evt) {
-        this.style("content", this.data("owner"));
+        this.style("content", this.data("owner") || this.data("source") + "->" + this.data("target"));
     });
     cy.edges().on("mouseout", function (evt) {
         this.style("content", "");
@@ -352,7 +379,7 @@ function updateEdgeOwner(punter, source, target) {
     const es = cy.edges("[source=\"" + source + "\"][target=\"" + target + "\"]");
     if (es.length > 0) {
         const e = es[0];
-        e.data()["owner"] = punter + "- t:" + turnNumber;
+        e.data()["owner"] = punter + "(t:" + turnNumber + ")";
         e.style("line-color", getPunterColour(punter));
     } else {
         logError("Trying to update nonexistent edge! (" + source + " -- " + target + ")");

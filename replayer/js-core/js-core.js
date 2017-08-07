@@ -28,7 +28,7 @@ const graphStyle = [
       "z-index": 9999,
       "text-valign": "center",
       "text-halign": "center",
-      "content": "λ"
+      "content": "data(id)" // λ
       }
   },
 

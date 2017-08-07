@@ -1,10 +1,19 @@
 package com.godaddy.icfp2017.services.algorithms;
 
-public enum Algorithms {
+import com.godaddy.icfp2017.services.analysis.Timeable;
+
+public enum Algorithms implements Timeable {
   AdjacentToMine,
   AdjacentToPath,
   ConnectedDecision,
   Connectedness,
   MineToMine,
-  MinimumSpanningTree
+  MinimumSpanningTree,
+  ScoringAlgo;
+
+
+  @Override
+  public String timeKey() {
+    return "Algorithms: " + name();
+  }
 }

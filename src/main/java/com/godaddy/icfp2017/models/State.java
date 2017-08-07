@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.godaddy.icfp2017.models.serialization.BinaryStateDeserializer;
 import com.godaddy.icfp2017.models.serialization.BinaryStateSerializer;
+import com.godaddy.icfp2017.services.analysis.Timeable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -12,8 +13,8 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
-import java.util.HashMap;
 import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 @JsonSerialize(using = BinaryStateSerializer.class)
 @JsonDeserialize(using = BinaryStateDeserializer.class)
@@ -29,23 +30,24 @@ public class State {
 
   private ImmutableMap<Integer, Site> siteToMap;
 
-  public Long getLastTime(String algorithm) {
-    return lastTimes.get(algorithm);
+  public Long getLastTime(final Timeable algorithm) {
+    return lastTimes.get(algorithm.timeKey());
   }
-  public HashMap<String, Long> getLastTimes() {
+
+  public ConcurrentHashMap<String, Long> getLastTimes() {
     return lastTimes;
   }
 
   public State() {
-    lastTimes = new HashMap<>();
+    lastTimes = new ConcurrentHashMap<>();
   }
 
-  public void setLastTime(String algorithm, Long lastTime) {
-    this.lastTimes.put(algorithm, lastTime);
+  public void setLastTime(Timeable timeable, Long lastTime) {
+    this.lastTimes.put(timeable.timeKey(), lastTime);
   }
 
   @JsonProperty
-  private HashMap<String, Long> lastTimes;
+  private transient ConcurrentHashMap<String, Long> lastTimes;
 
   @JsonProperty
   private int punters;
@@ -79,7 +81,9 @@ public class State {
     return graphOfEnemyMoves;
   }
 
-  public void setGraphOfEnemyMoves(final SimpleWeightedGraph<Site, River> graph) { this.graphOfEnemyMoves = graph; }
+  public void setGraphOfEnemyMoves(final SimpleWeightedGraph<Site, River> graph) {
+    this.graphOfEnemyMoves = graph;
+  }
 
 
   public void setMines(final ImmutableSet<Site> mines) {
@@ -98,7 +102,9 @@ public class State {
     return shortestPaths;
   }
 
-  public SortedSet<Path> getRankedPaths() { return rankedPaths; }
+  public SortedSet<Path> getRankedPaths() {
+    return rankedPaths;
+  }
 
   public void setRankedPaths(final SortedSet<Path> rankedPaths) {
     this.rankedPaths = rankedPaths;
@@ -112,7 +118,9 @@ public class State {
     this.punters = punters;
   }
 
-  public ImmutableList<GraphPath<Site, River>> getMineToMinePaths() { return mineToMinePaths; }
+  public ImmutableList<GraphPath<Site, River>> getMineToMinePaths() {
+    return mineToMinePaths;
+  }
 
   public void setMineToMinePaths(final ImmutableList<GraphPath<Site, River>> paths) {
     this.mineToMinePaths = paths;
