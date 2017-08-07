@@ -108,12 +108,10 @@ public class GameLogicTests {
         // Verify the algorithm sets a valid weight on each river explicitly
         System.out.println("Validating weight settings for " + algorithm.toString());
         state.getGraph().edgeSet()
-             .forEach(river -> {
-               river.getAlgorithmWeights().values().forEach(weight -> {
-                 assertTrue(weight <= 1.0);
-                 assertTrue(weight > 0.0);
-               });
-             });
+             .forEach(river -> river.getAlgorithmWeights().values().forEach(weight -> {
+               assertTrue(weight <= 1.0);
+               assertTrue(weight > 0.0);
+             }));
       }
     }
   }
@@ -129,7 +127,7 @@ public class GameLogicTests {
       Long timeToRun = state.getLastTimes().get(key);
       if (null != timeToRun) {
         System.out.println(key + " took " + timeToRun + "ms");
-        assertTrue(timeToRun < 400);
+        assertTrue(timeToRun < 500);
       }
     }
   }
