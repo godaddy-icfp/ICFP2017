@@ -105,6 +105,10 @@ public class State {
     this.shortestPaths = shortestPaths;
   }
 
+  public River getRiver(int source, int target) {
+    return getGraph().getEdge(new Site(source), new Site(target));
+  }
+
   public FloydWarshallShortestPaths<Site, River> getShortestPaths() {
     return shortestPaths;
   }

@@ -55,19 +55,8 @@ public class GameDecision {
     double bestScore = 0.0;
 
     for (River river : state.getGraph().edgeSet()) {
-      double score = 1.0;
-      for (Map.Entry<Algorithms, Double> algorithm : algorithmValues.entrySet()) {
-        score *= river
-                     .getAlgorithmWeights()
-                     .getOrDefault(algorithm.getKey(), Weights.Identity) * algorithm.getValue();
-      }
+      double score = calculateRiverScore(algorithmValues, river);
 
-      if ((river.getSource() == 30 && river.getTarget() == 33) ||
-          (river.getSource() == 7 && river.getTarget() == 13) ||
-          (river.getSource() == 20 && river.getTarget() == 29)) {
-        debugStream.println(String.format("optimal: %s", score));
-        debugStream.println(String.format("optimalAlgoWeights: %s", river.getAlgorithmWeights().toString()));
-      }
       if (!river.isClaimed() && (score > bestScore)) {
         bestScore = score;
         bestRiver = river;
@@ -79,6 +68,17 @@ public class GameDecision {
     // sometimes we get called and don't produce a river (because they all score 0.0)
     // while we can do a better job, let's just send a pass for now to avoid crashing
     return Optional.ofNullable(bestRiver);
+  }
+
+  public double calculateRiverScore(ImmutableMap<Algorithms, Double> algorithmValues, River river) {
+    double score = 1.0;
+    for (Map.Entry<Algorithms, Double> algorithm : algorithmValues.entrySet()) {
+      Double algorithmScore = river.getAlgorithmWeights().getOrDefault(algorithm.getKey(), Weights.Identity);
+      Double algorithmMultiple = algorithm.getValue();
+      double intermediateScore = algorithmScore * algorithmMultiple;
+      score *= intermediateScore;
+    }
+    return score;
   }
 
   protected void debugWeights(final State state, final River bestRiver, final double bestScore) {

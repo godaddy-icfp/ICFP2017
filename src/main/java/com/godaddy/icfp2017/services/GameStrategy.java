@@ -71,9 +71,11 @@ public class GameStrategy {
   }
 
   private boolean mstFinished(final State state) {
-    return state.getGraph().edgeSet()
+    boolean notFinished = state.getGraph().edgeSet()
         .stream()
         .filter(river -> !river.isClaimed())
-        .anyMatch(river -> river.getAlgorithmWeights().get(Algorithms.MinimumSpanningTree) == null);
+        .anyMatch(river -> river.getAlgorithmWeights().get(Algorithms.MinimumSpanningTree) != null);
+
+    return !notFinished;
   }
 }
