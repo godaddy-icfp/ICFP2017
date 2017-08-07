@@ -1,1 +1,33 @@
-Sources found at https://github.com/kercheval/ICFP2017
+Aug 7, 2017
+
+Team members:
+
+Jake Swenson
+Jeremy Zogg
+John Kercheval
+John Lewis
+Mitch Olson
+Nathan Howell
+Timothy Ng
+
+Our entry works like this - we have a set of algorithms which assign weights to edges. The algorithms themselves are weighted so that as the game progresses we can emphasize certain algorithms over others. At each turn, we select the best edge (with the highest weight) as our move.
+
+Algorithms are applied in several phases:
+
+- Driver handles the protocol and message state engine
+- Setup (initial algorithm set and map creation
+- Analysis handles current map analysis and state updates for shared data
+- Algorithm runs our weighting algorithms used for move decisions
+- Move decision computes composite waiting for best moves using algorithm weighting that is unique per game phase
+
+We have three distinct phases to game play
+
+- Early stage is mine acquisition
+- Middle stage is minimum spanning tree for mines
+- Late stage is connected path growth
+
+We have several algorithms:
+
+- MST. We use the MST as our primary algorithm
+- Path extension. This algorithm prefers to extend paths through the graph
+- Enemy detection. This algorithm prefers to block long enemy paths in strategic spots (namely, sites that have few outgoing edges)
