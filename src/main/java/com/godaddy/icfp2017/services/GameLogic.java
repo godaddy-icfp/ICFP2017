@@ -1,6 +1,10 @@
 package com.godaddy.icfp2017.services;
 
-import com.godaddy.icfp2017.models.*;
+import com.godaddy.icfp2017.models.GameplayP2S;
+import com.godaddy.icfp2017.models.GameplayS2P;
+import com.godaddy.icfp2017.models.SetupP2S;
+import com.godaddy.icfp2017.models.SetupS2P;
+import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 
 import java.io.PrintStream;
@@ -28,14 +32,16 @@ public class GameLogic {
   }
 
   public GameplayP2S move(final GameplayS2P move) {
-    return new GameMove(this.currentState, debugStream,
-        new GameAlgorithms(debugStream, EnumSet.of(
-            Algorithms.AdjacentToMine,
-            Algorithms.AdjacentToPath,
-            Algorithms.ConnectedDecision,
-            Algorithms.Connectedness,
-            Algorithms.MineToMine,
-            Algorithms.MinimumSpanningTree
-        ))).getMove(move);
+    final EnumSet<Algorithms> gameAlgos = EnumSet.of(
+        Algorithms.AdjacentToMine,
+        Algorithms.AdjacentToPath,
+        Algorithms.ConnectedDecision,
+        Algorithms.Connectedness,
+        Algorithms.MineToMine,
+        Algorithms.MinimumSpanningTree);
+
+    try (final GameAlgorithms algorithms = new GameAlgorithms(debugStream, gameAlgos)) {
+      return new GameMove(this.currentState, debugStream, algorithms).getMove(move);
+    }
   }
 }
