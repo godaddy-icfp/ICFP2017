@@ -1,4 +1,4 @@
-# ICFP2017
+# ICFP2017 ![Build Status](https://circleci.com/gh/kercheval/ICFP2017.svg?style=shield&circle-token=:circle-token)
 
 2017 ICFP Programming Contest at https://icfpcontest2017.github.io/
 
