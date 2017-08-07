@@ -43,8 +43,7 @@ public class GameLogic implements AutoCloseable {
   private final ImmutableMap<Analyzers, GraphAnalyzer> analyzers =
       ImmutableMap.of(
           Analyzers.SiteConnectivity, new SiteConnectivityAnalyzer(),
-          Analyzers.MineToMinePath, new MineToMinePathAnalyzer()
-                     );
+          Analyzers.MineToMinePath, new MineToMinePathAnalyzer());
 
   private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
       ImmutableMap.<Algorithms, AlgorithmFactory>builder()
@@ -53,7 +52,7 @@ public class GameLogic implements AutoCloseable {
           .put(Algorithms.ConnectedDecision, ConnectedDecisionAlgorithm::new)
           .put(Algorithms.Connectedness, ConnectednessAlgorithm::new)
           .put(Algorithms.MineToMine, MineToMineAlgorithm::new)
-          //.put(Algorithms.ScoringAlgo, MinePathsScoreAlgorithm::new)
+          //          .put(Algorithms.ScoringAlgo, MinePathsScoreAlgorithm::new)
           //.put(Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new)
           .build();
 
