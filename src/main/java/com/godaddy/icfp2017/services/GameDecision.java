@@ -11,31 +11,6 @@ import java.io.PrintStream;
 import java.util.Optional;
 
 public class GameDecision {
-
-  // These are constants that value algorithms over all rivers
-  // It allows us to select which algorithms are valuable (and which are not) for this particular move
-  private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.<Algorithms, Double>builder()
-      .put(Algorithms.AdjacentToMine, 0.8)
-      .put(Algorithms.AdjacentToPath, 0.25)
-      .put(Algorithms.ConnectedDecision, 0.25)
-      .put(Algorithms.Connectedness, 0.25)
-      .put(Algorithms.MineToMine, 1.0)
-      .put(Algorithms.MinimumSpanningTree, 0.8)
-      .put(Algorithms.ScoringAlgo, 0.8)
-      .build();
-
-  private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.<Algorithms, Double>builder()
-      .put(Algorithms.AdjacentToMine, 0.5)
-      .put(Algorithms.AdjacentToPath, 0.5)
-      .put(Algorithms.ConnectedDecision, 0.25)
-      .put(Algorithms.Connectedness, 0.5)
-      .put(Algorithms.MineToMine, 1.0)
-      .put(Algorithms.MinimumSpanningTree, 1.0)
-      .put(Algorithms.ScoringAlgo, 1.0)
-      .build();
-
-  private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
-
   private final PrintStream debugStream;
 
   public GameDecision(PrintStream debugStream) {
@@ -43,12 +18,8 @@ public class GameDecision {
   }
 
   public GameplayP2S getDecision(State state) {
-    if (!mineAdjacenciesExist(state)) {
-      strategyState = algorithmValuesProgress;
-    }
-
     // Compute all the weight
-    Optional<River> bestRiver = this.computeWeightOnGraph(state, strategyState);
+    Optional<River> bestRiver = this.computeWeightOnGraph(state, new GameStrategy().getStrategy(state));
 
     //debug best river weighting
     double bestRiverWeight = state.getGraph().getEdgeWeight(bestRiver.get());
@@ -100,18 +71,5 @@ public class GameDecision {
     // sometimes we get called and don't produce a river (because they all score 0.0)
     // while we can do a better job, let's just send a pass for now to avoid crashing
     return Optional.ofNullable(bestRiver);
-  }
-
-  private boolean mineAdjacenciesExist(State state) {
-    long mineAdjacencyCount = state
-        .getMines()
-        .stream()
-        .flatMap(mine -> state.getGraph()
-            .edgesOf(mine)
-            .stream()
-            .filter(river -> !river.isClaimed()))
-        .count();
-
-    return mineAdjacencyCount > 0;
   }
 }
