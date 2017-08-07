@@ -31,3 +31,9 @@ We have several algorithms:
 - MST. We use the MST as our primary algorithm
 - Path extension. This algorithm prefers to extend paths through the graph
 - Enemy detection. This algorithm prefers to block long enemy paths in strategic spots (namely, sites that have few outgoing edges)
+
+We did some small things to help us be more productive:
+
+- We built our own server so we can test offline and have control of the game
+- We captured output for every game and built a replay viewer that lets us view a played game one step at a time
+- We built state deserializers so that we can test a move against specific states

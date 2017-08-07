@@ -12,3 +12,5 @@ echo .
 echo .
 echo Remember to rename the tarball using our team ID before submission
 echo .
+echo MD5 Checksum
+md5 icfp-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.tar.gz
