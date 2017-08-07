@@ -74,9 +74,8 @@ public class GameDriver {
       }
 
       @Override
-      public Void timeout() {
+      public void timeout() {
         debugStream.println("Got a timeout message");
-        return null;
       }
 
       @Override

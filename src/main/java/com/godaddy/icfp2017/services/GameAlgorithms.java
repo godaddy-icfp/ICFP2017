@@ -29,7 +29,6 @@ public class GameAlgorithms {
           //.put(Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new)
           .build();
 
-
   private final PrintStream debugStream;
 
   public GameAlgorithms(PrintStream debugStream) {

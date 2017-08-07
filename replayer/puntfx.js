@@ -171,21 +171,26 @@ function startReplay() {
     var log = document.getElementById("replayLog");
     var value = log.value;
     var split = value.split(/\n/g);
-    messages = split;
+    messages = split || [];
     position = 0;
     started = true;
+    nextMessage();
 }
 
 function nextMessage() {
-    processMessage(messages[position++]);
+    if (position < messages.length) {
+        var message = messages[position++];
+
+        if (message && message.length > 0) {
+            processMessage();
+        }
+    }
 }
 
 function next20() {
     for (let i = 0; i < 20; i++) {
-        processMessage(messages[position + i]);
+        nextMessage();
     }
-
-    position += 20;
 }
 
 var turnNumber = 0,
