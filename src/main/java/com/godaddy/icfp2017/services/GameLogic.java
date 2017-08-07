@@ -229,6 +229,9 @@ public class GameLogic implements AutoCloseable {
     // Compute all the weight
     Optional<River> bestRiver = this.computeWeightOnGraph(currentState, strategyState);
 
+    //debug best river weighting
+    debugStream.println(String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
+
     // initialize the response
     return bestRiver
         .map(river -> {
