@@ -33,8 +33,8 @@ final class FrameReader implements AutoCloseable, Iterator<byte[]> {
     final StringBuilder sb = new StringBuilder(10);
 
     try {
-      for (int i = 0; i < 10; ++i) {
-        int ch = reader.read();
+      while (true) {
+        final char ch = (char) reader.read();
         if (ch == ':') {
           final int len = Integer.parseUnsignedInt(sb.toString(), 10);
           final byte[] buffer = new byte[len];
@@ -42,15 +42,13 @@ final class FrameReader implements AutoCloseable, Iterator<byte[]> {
           next = buffer;
           debug.accept(buffer);
           return true;
-        } else {
-          sb.append((char) ch);
+        } else if (Character.isDigit(ch)) {
+          sb.append(ch);
         }
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      return false;
     }
-
-    return false;
   }
 
   @Override
