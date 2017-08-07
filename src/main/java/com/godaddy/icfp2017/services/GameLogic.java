@@ -337,24 +337,27 @@ public class GameLogic implements AutoCloseable {
       final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
       final ConcurrentHashMap<Site, Integer> values,
       final Site node,
-      final HashMap<Site, Boolean> seen
+      final HashMap<Site, Boolean> seen,
+      final int punter
   ) {
     seen.put(node, true);
 
     graphOfEnemyMoves.edgesOf(node).forEach(river -> {
-      // Copy weights over
-      values.forEach((site, weight) -> {
-        if (river.getMaxEnemyPathFromSites().containsKey(site) == false) {
-          river.getMaxEnemyPathFromSites().put(site, weight + 1);
+      if (river.getClaimedBy() == punter) {
+        // Copy weights over
+        values.forEach((site, weight) -> {
+          if (river.getMaxEnemyPathFromSites().containsKey(site) == false) {
+            river.getMaxEnemyPathFromSites().put(site, weight + 1);
+          }
+        });
+
+        // iterate
+        Site target = state.getSiteToMap().get(river.getSource()) == node ?
+            state.getSiteToMap().get(river.getTarget()) : node;
+
+        if (!seen.containsKey(target)) {
+          dfs(state, graphOfEnemyMoves, river.getMaxEnemyPathFromSites(), target, seen, punter);
         }
-      });
-
-      // iterate
-      Site target = state.getSiteToMap().get(river.getSource()) == node ?
-                      state.getSiteToMap().get(river.getTarget()) : node;
-
-      if (!seen.containsKey(target)) {
-        dfs(state, graphOfEnemyMoves, river.getMaxEnemyPathFromSites(), target, seen);
       }
     });
   }
@@ -419,10 +422,10 @@ public class GameLogic implements AutoCloseable {
     // And vice versa
 
     HashMap<Site, Boolean> seen = new HashMap<>();
-    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), targetVertex, seen);
+    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), targetVertex, seen, edge.getClaimedBy());
 
     seen = new HashMap<>();
-    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), sourceVertex, seen);
+    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), sourceVertex, seen, edge.getClaimedBy());
 
     // Add enemy moves, and update the path length
     graphOfEnemyMoves.addEdge(sourceVertex, targetVertex, edge);
