@@ -19,6 +19,7 @@ public class Site implements Serializable {
   private int ownedConnectedRivers;
   private int totalConnectedRivers;
   private boolean isOwned;
+  private int shortestPathToAnyMine = Integer.MAX_VALUE;
 
   // Statistics based on the connected edges for all nodes in radius around site
   private int radiusMark;
@@ -125,4 +126,7 @@ public class Site implements Serializable {
   public void setRadiusMark(int radiusMark) {
     this.radiusMark = radiusMark;
   }
+
+  public int getShortestPathToAnyMine() { return shortestPathToAnyMine; }
+  public void setShortestPathToAnyMine(int s) { shortestPathToAnyMine = s; }
 }

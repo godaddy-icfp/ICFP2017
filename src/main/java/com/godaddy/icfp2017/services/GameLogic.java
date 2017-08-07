@@ -7,6 +7,8 @@ import com.godaddy.icfp2017.models.SetupS2P;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 
+import com.godaddy.icfp2017.services.algorithms.Algorithms;
+import com.godaddy.icfp2017.services.algorithms.EnemyPathWeightAlgorithm;
 import java.io.PrintStream;
 import java.util.EnumSet;
 import java.util.Optional;
@@ -40,6 +42,7 @@ public class GameLogic {
         Algorithms.AdjacentToPath,
         Algorithms.ConnectedDecision,
         Algorithms.Connectedness,
+        Algorithms.EnemyPath,
         Algorithms.MineToMine,
         Algorithms.MinimumSpanningTree,
         Algorithms.ScoringAlgo);

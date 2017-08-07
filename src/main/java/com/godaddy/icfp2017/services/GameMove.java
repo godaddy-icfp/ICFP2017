@@ -196,7 +196,7 @@ public class GameMove {
 
         // iterate
         Site target = state.getSiteToMap().get(river.getSource()) == node ?
-                      state.getSiteToMap().get(river.getTarget()) : node;
+                      state.getSiteToMap().get(river.getTarget()) : state.getSiteToMap().get(river.getSource());
 
         if (!seen.containsKey(target)) {
           dfs(state, graphOfEnemyMoves, river.getMaxEnemyPathFromSites(), target, seen, punter);
