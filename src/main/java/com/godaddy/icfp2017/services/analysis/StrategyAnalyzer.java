@@ -22,10 +22,8 @@ public class StrategyAnalyzer extends BaseAnalyzer {
   @Override
   public void analyze(State state) {
     int totalClaimed = 0;
-    int totalNodes = 0;
     final SimpleWeightedGraph<Site, River> graph = state.getGraph();
     for (Site site: graph.vertexSet()) {
-      totalNodes++;
       if (site.isOwned()) {
         totalClaimed++;
       }
@@ -41,7 +39,6 @@ public class StrategyAnalyzer extends BaseAnalyzer {
         site.setRadiusTotalConnectedRivers(site.getTotalConnectedRivers());
       }
     }
-    state.setTotalNodes(totalNodes);
     state.setTotalOwned(totalClaimed);
   }
 

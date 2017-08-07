@@ -42,11 +42,11 @@ public class GameStrategy {
       .build();
 
   public ImmutableMap<Algorithms, Double> getStrategy(State state) {
+    if (mstFinished(state)) {
+      return pathExtendStrategy;
+    }
     if (!mineAdjacenciesExist(state)) {
       return mineAcquireStrategy;
-    }
-    else if (mstFinished(state)) {
-      return pathExtendStrategy;
     }
 
     return minimumSpanningTreeStrategy;

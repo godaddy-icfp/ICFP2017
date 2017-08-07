@@ -139,16 +139,7 @@ public class State {
     return siteToMap;
   }
 
-  private int totalNodes;
   private int totalOwned;
-
-  public int getTotalNodes() {
-    return totalNodes;
-  }
-
-  public void setTotalNodes(int totalNodes) {
-    this.totalNodes = totalNodes;
-  }
 
   public int getTotalOwned() {
     return totalOwned;
