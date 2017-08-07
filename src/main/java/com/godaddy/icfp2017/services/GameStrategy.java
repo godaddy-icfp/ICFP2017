@@ -41,8 +41,6 @@ public class GameStrategy {
       .put(Algorithms.EnemyPath, 0.8)
       .build();
 
-  private ImmutableMap<Algorithms, Double> strategyState = mineAcquireStrategy;
-
   public ImmutableMap<Algorithms, Double> getStrategy(State state) {
     if (!mineAdjacenciesExist(state)) {
       return mineAcquireStrategy;
