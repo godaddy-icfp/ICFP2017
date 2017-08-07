@@ -47,10 +47,14 @@ public class GameStrategy {
     if (!mineAdjacenciesExist(state)) {
       return mineAcquireStrategy;
     }
-    return pathExtendStrategy;
+    else if (mstFinished(state)) {
+      return pathExtendStrategy;
+    }
+
+    return minimumSpanningTreeStrategy;
   }
 
-  private boolean mineAdjacenciesExist(State state) {
+  private boolean mineAdjacenciesExist(final State state) {
     long mineAdjacencyCount = state
         .getMines()
         .stream()
@@ -61,5 +65,12 @@ public class GameStrategy {
         .count();
 
     return mineAdjacencyCount > 0;
+  }
+
+  private boolean mstFinished(final State state) {
+    return state.getGraph().edgeSet()
+        .stream()
+        .filter(river -> !river.isClaimed())
+        .anyMatch(river -> river.getAlgorithmWeights().get(Algorithms.MinimumSpanningTree) == null);
   }
 }
