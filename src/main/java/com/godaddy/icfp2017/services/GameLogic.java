@@ -1,19 +1,13 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
-import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
-import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
 
 import java.io.PrintStream;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
@@ -21,41 +15,22 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 public class GameLogic {
 
-  private final PrintStream debugStream;
+  private GameInitiator gameInitiator;
 
   private State currentState;
+  private final PrintStream debugStream;
 
   public GameLogic(final PrintStream debugStream) {
+    this.gameInitiator = new GameInitiator();
     this.debugStream = debugStream;
-    this.gameAnalyzer = new GameAnalyzer();
-    this.gameAlgorithms = new GameAlgorithms(this.debugStream);
-    this.gameDecision = new GameDecision(this.debugStream);
   }
 
   public SetupP2S setup(final SetupS2P setup) {
-    final State state = new State();
-
-    state.setPunter(setup.getPunter());
-    state.setPunters(setup.getPunters());
-
+    this.currentState = gameInitiator.createState(setup);
     // respond
     SetupP2S response = new SetupP2S();
     response.setReady(setup.getPunter());
-    response.setState(state);
-
-    final GraphConstruction graphConstruction = buildGraphs(setup);
-    state.setGraph(graphConstruction.graph);
-    state.setGraphOfEnemyMoves(graphConstruction.graphOfEnemyMoves);
-    state.setMines(graphConstruction.mines);
-    state.setSiteToMap(graphConstruction.siteToMap);
-    state.setShortestPaths(new FloydWarshallShortestPaths<>(graphConstruction.graph));
-
-    new MineToMinePathAnalyzer().analyze(state);
-    RankedPathsCalculator calculator = new RankedPathsCalculator(state);
-    state.setRankedPaths(calculator.calculate());
-
-    this.currentState = state;
-
+    response.setState(this.currentState);
     return response;
   }
 
@@ -89,202 +64,7 @@ public class GameLogic {
         builder.build());
   }
 
-  private static GraphConstruction buildGraphs(final SetupS2P setup) {
-    final Map map = setup.getMap();
-    final List<Site> sites = map.getSites();
-    final List<River> rivers = map.getRivers();
-    final ImmutableSet<Integer> mines = ImmutableSet.copyOf(map.getMines());
-    final ImmutableMap<Integer, Site> siteById = sites
-        .stream()
-        .collect(toImmutableMap(Site::getId, Function.identity()));
-
-    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?> builder =
-        SimpleWeightedGraph.builder(new LambdaEdgeFactory());
-
-    final UndirectedWeightedGraphBuilderBase<Site, River, ? extends SimpleWeightedGraph<Site, River>, ?>
-        builderOfEnemyMoves =
-        SimpleWeightedGraph.builder(new LambdaEdgeFactory());
-
-    for (final Site site : sites) {
-      site.setMine(mines.contains(site.getId()));
-      builder.addVertex(site);
-      builderOfEnemyMoves.addVertex(site);
-    }
-
-    for (final River river : rivers) {
-      builder.addEdge(
-          siteById.get(river.getSource()),
-          siteById.get(river.getTarget()),
-          river);
-    }
-
-    return new GraphConstruction(
-        mines.stream().map(siteById::get).collect(toImmutableSet()),
-        builder.build(),
-        builderOfEnemyMoves.build(),
-        siteById);
-  }
-
-  private GameAnalyzer gameAnalyzer;
-  private GameAlgorithms gameAlgorithms;
-  private GameDecision gameDecision;
-
-  public GameplayP2S move(
-      final GameplayS2P move) {
-    Long startTime = System.currentTimeMillis();
-
-    final State currentState = getState(move);
-    gameAnalyzer.run(currentState);
-    gameAlgorithms.run(currentState, startTime);
-    return gameDecision.getDecision(currentState);
-  }
-
-  private State getState(GameplayS2P move) {
-    final State currentState = Optional.ofNullable(move.getPreviousState())
-        .orElseGet(() -> Optional.ofNullable(this.currentState)
-            .orElseThrow(IllegalStateException::new));
-    zeroClaimedEdges(move.getPreviousMoves(),
-        currentState.getGraph(),
-        currentState.getGraphOfEnemyMoves(),
-        currentState);
-    return currentState;
-  }
-
-  // Given a set of values and a node,
-  // go to each connected edge, and copy missing weights
-  // recurse
-
-  private void dfs(
-      final State state,
-      final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
-      final ConcurrentHashMap<Site, Integer> values,
-      final Site node,
-      final HashMap<Site, Boolean> seen,
-      final int punter
-  ) {
-    seen.put(node, true);
-
-    graphOfEnemyMoves.edgesOf(node).forEach(river -> {
-      if (river.getClaimedBy() == punter) {
-        // Copy weights over
-        values.forEach((site, weight) -> {
-          if (!river.getMaxEnemyPathFromSites().containsKey(site)) {
-            river.getMaxEnemyPathFromSites().put(site, weight + 1);
-          }
-        });
-
-        // iterate
-        Site target = state.getSiteToMap().get(river.getSource()) == node ?
-            state.getSiteToMap().get(river.getTarget()) : node;
-
-        if (!seen.containsKey(target)) {
-          dfs(state, graphOfEnemyMoves, river.getMaxEnemyPathFromSites(), target, seen, punter);
-        }
-      }
-    });
-  }
-
-  private void addEnemyEdge(
-      final State state,
-      final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
-      final Site sourceVertex,
-      final Site targetVertex,
-      final River edge,
-      final int punter) {
-    // Look at source, and for each site
-    //  compute the min weight across all edges. This will be the the path closest to the site
-    //  this will be the weight for this edge
-    //  do this for both source and target
-
-    // Then we have to "extend" the weights from source through target, and from target through source
-
-    Preconditions.checkState(edge.getMaxEnemyPathFromSites().size() == 0);
-
-    graphOfEnemyMoves.edgesOf(sourceVertex).stream().filter(river -> river.getClaimedBy() == punter)
-        .forEach(river -> river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
-          if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
-            if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
-              edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-            }
-          } else {
-            edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-          }
-        }));
-
-    graphOfEnemyMoves.edgesOf(targetVertex).stream().filter(river -> river.getClaimedBy() == punter)
-        .forEach(river -> river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
-          if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
-            if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
-              edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-            }
-          } else {
-            edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-          }
-        }));
-
-    // Check if the source is a mine
-    if (sourceVertex.isMine()) {
-      edge.getMaxEnemyPathFromSites().put(sourceVertex, 1);
-    }
-
-    // Check if the target is a mine
-    if (targetVertex.isMine()) {
-      edge.getMaxEnemyPathFromSites().put(targetVertex, 1);
-    }
-
-    // Let's propagate
-
-    // TODO:
-    // We have to propagate weights collected from rivers connected to source to all rivers connected to target
-    // (including source site)
-    // And vice versa
-
-    HashMap<Site, Boolean> seen = new HashMap<>();
-    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), targetVertex, seen,
-        edge.getClaimedBy());
-
-    seen = new HashMap<>();
-    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), sourceVertex, seen,
-        edge.getClaimedBy());
-
-    // Add enemy moves, and update the path length
-    graphOfEnemyMoves.addEdge(sourceVertex, targetVertex, edge);
-  }
-
-  private void zeroClaimedEdges(
-      final PreviousMoves previousMoves,
-      final SimpleWeightedGraph<Site, River> graph,
-      final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
-      final State state) {
-
-    final List<Move> moves = previousMoves.getMoves();
-    moves.stream()
-        .filter(m -> m.getClaim() != null)
-        .map(Move::getClaim)
-        .forEach(claim -> {
-          final Site sourceVertex = state.getSiteToMap().get(claim.getSource());
-          final Site targetVertex = state.getSiteToMap().get(claim.getTarget());
-          final River edge = Optional.ofNullable(graph.getEdge(sourceVertex, targetVertex))
-              .orElseGet(() -> graph.getEdge(targetVertex, sourceVertex));
-          if (edge == null) {
-            return;
-          }
-
-          edge.setClaimedBy(claim.getPunter());
-
-          if (state.getPunter() != claim.getPunter()) {
-            // remove this edge entirely from the graph so we can avoid
-            // traversing it during any analysis passes
-            graph.removeEdge(edge);
-
-            // but add this edge to the enemy moves
-            System.out.println("Add enemy edge " + edge.toString());
-            addEnemyEdge(state, graphOfEnemyMoves, sourceVertex, targetVertex, edge,
-                claim.getPunter());
-          } else {
-            // if we own the edge mark it as weight 0, it's free to use
-            graph.setEdgeWeight(edge, 0.0);
-          }
-        });
+  public GameplayP2S move(final GameplayS2P move) {
+    return new GameMove(this.currentState, this.debugStream).getMove(move);
   }
 }

@@ -4,7 +4,6 @@ import com.godaddy.icfp2017.models.Claim;
 import com.godaddy.icfp2017.models.GameplayP2S;
 import com.godaddy.icfp2017.models.Pass;
 import com.godaddy.icfp2017.models.River;
-import com.godaddy.icfp2017.models.SetupP2S;
 import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.google.common.collect.ImmutableMap;
