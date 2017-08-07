@@ -6,6 +6,7 @@ import com.godaddy.icfp2017.models.State;
 import com.godaddy.icfp2017.services.Pair;
 import com.godaddy.icfp2017.services.Weights;
 import com.google.common.collect.ImmutableSet;
+import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.SimpleWeightedGraph;
@@ -13,6 +14,7 @@ import org.jgrapht.graph.SimpleWeightedGraph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,12 +39,12 @@ public final class PathExtensionAlgorithm extends BaseAlgorithm {
     final Comparator<Pair<River, Site>> comparator = (o1, o2) -> {
       final int i1 = shortestMinePaths
           .stream()
-          .mapToInt(site -> site.getPath(o1.right).getLength())
+          .mapToInt(site -> Optional.ofNullable(site.getPath(o1.right)).map(GraphPath::getLength).orElse(0))
           .max()
           .orElse(0);
       final int i2 = shortestMinePaths
           .stream()
-          .mapToInt(site -> site.getPath(o2.right).getLength())
+          .mapToInt(site -> Optional.ofNullable(site.getPath(o2.right)).map(GraphPath::getLength).orElse(0))
           .max()
           .orElse(0);
       return -Integer.compare(i1, i2);
