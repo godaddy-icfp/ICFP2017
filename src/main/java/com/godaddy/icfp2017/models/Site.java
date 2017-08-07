@@ -15,9 +15,16 @@ public class Site implements Serializable {
   private double x;
   private double y;
 
+  // Statistics based on radius zero (edges connected directly)
   private int ownedConnectedRivers;
   private int totalConnectedRivers;
   private boolean isOwned;
+
+  // Statistics based on the connected edges for all nodes in radius around site
+  private int radiusMark;
+  private int radiusConnectedRadius;
+  private int radiusOwnedConnectedRivers;
+  private int radiusTotalConnectedRivers;
 
   public Site() {
   }
@@ -86,4 +93,36 @@ public class Site implements Serializable {
   public void setTotalConnectedRivers(int totalConnectedRivers) { this.totalConnectedRivers = totalConnectedRivers; }
 
   public boolean isOwned() { return ownedConnectedRivers > 0; }
+
+  public int getRadiusConnectedRadius() {
+    return radiusConnectedRadius;
+  }
+
+  public void setRadiusConnectedRadius(int radiusConnectedRadius) {
+    this.radiusConnectedRadius = radiusConnectedRadius;
+  }
+
+  public int getRadiusOwnedConnectedRivers() {
+    return radiusOwnedConnectedRivers;
+  }
+
+  public void setRadiusOwnedConnectedRivers(int radiusOwnedConnectedRivers) {
+    this.radiusOwnedConnectedRivers = radiusOwnedConnectedRivers;
+  }
+
+  public int getRadiusTotalConnectedRivers() {
+    return radiusTotalConnectedRivers;
+  }
+
+  public void setRadiusTotalConnectedRivers(int radiusTotalConnectedRivers) {
+    this.radiusTotalConnectedRivers = radiusTotalConnectedRivers;
+  }
+
+  public int getRadiusMark() {
+    return radiusMark;
+  }
+
+  public void setRadiusMark(int radiusMark) {
+    this.radiusMark = radiusMark;
+  }
 }

@@ -15,17 +15,18 @@ import com.godaddy.icfp2017.services.JsonMapper;
 import com.godaddy.icfp2017.services.Weights;
 import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.testng.annotations.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -91,14 +92,14 @@ public class GameLogicTests {
   }
 
   @Test
-  public void verify_weights_are_set() throws IOException {
+  public void verify_weights_in_bound() throws IOException {
     GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadBigSetup());
     State state = setup.getState();
     final GameAlgorithms gameAlgorithms = new GameAlgorithms(new PrintStream(new ByteArrayOutputStream()));
     for (Algorithms algorithm : Algorithms.values()) {
       if (gameAlgorithms.isUsingAlgorithm(algorithm)) {
-    final GraphAlgorithm graphAlgorithm = gameAlgorithms.getGraphAlgorithm(algorithm);
+        final GraphAlgorithm graphAlgorithm = gameAlgorithms.getGraphAlgorithm(algorithm);
         // Remove all current weights
         state.getGraph().edgeSet().forEach(river -> river.getAlgorithmWeights().clear());
 
@@ -108,7 +109,6 @@ public class GameLogicTests {
         System.out.println("Validating weight settings for " + algorithm.toString());
         state.getGraph().edgeSet()
              .forEach(river -> {
-               assertTrue(river.getAlgorithmWeights().size() > 0);
                river.getAlgorithmWeights().values().forEach(weight -> {
                  assertTrue(weight <= 1.0);
                  assertTrue(weight > 0.0);
@@ -121,7 +121,7 @@ public class GameLogicTests {
   private void validateSetupTime(Long timer) {
     Long timeTotal = System.currentTimeMillis() - timer;
     System.out.println("Setup for graph took " + timeTotal + "ms");
-    assertTrue(timeTotal < 500);
+    assertThat(timeTotal).withFailMessage("Setup for graph took " + timeTotal + "ms").isLessThan(500);
   }
 
   private void validateTimes(State state) {

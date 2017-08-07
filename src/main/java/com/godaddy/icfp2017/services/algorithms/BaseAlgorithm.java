@@ -27,7 +27,6 @@ abstract public class BaseAlgorithm implements GraphAlgorithm {
     Long timer = System.currentTimeMillis();
     String timeKey = "Algorithm:" + algorithm;
     state.setLastTime(algorithm, 1000000L); // Set a sentinel value
-    state.getGraph().edgeSet().forEach(river -> setter.apply(river, Weights.Identity));
     iterate(state);
     state.setLastTime(algorithm, System.currentTimeMillis() - timer);
   }

@@ -16,7 +16,6 @@ public class GameLogic {
   public GameLogic(final PrintStream debugStream) {
     this.gameInitiator = new GameInitiator(debugStream);
     this.debugStream = debugStream;
-    ;
   }
 
   public SetupP2S setup(final SetupS2P setup) {

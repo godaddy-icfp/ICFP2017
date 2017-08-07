@@ -182,7 +182,7 @@ function nextMessage() {
         var message = messages[position++];
 
         if (message && message.length > 0) {
-            processMessage();
+            processMessage(message);
         }
     }
 }

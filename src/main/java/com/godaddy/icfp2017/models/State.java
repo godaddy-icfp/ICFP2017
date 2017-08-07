@@ -138,4 +138,23 @@ public class State {
   public ImmutableMap<Integer, Site> getSiteToMap() {
     return siteToMap;
   }
+
+  private int totalNodes;
+  private int totalOwned;
+
+  public int getTotalNodes() {
+    return totalNodes;
+  }
+
+  public void setTotalNodes(int totalNodes) {
+    this.totalNodes = totalNodes;
+  }
+
+  public int getTotalOwned() {
+    return totalOwned;
+  }
+
+  public void setTotalOwned(int totalOwned) {
+    this.totalOwned = totalOwned;
+  }
 }
