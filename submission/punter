@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+exec java -jar ICFP2017-1.0-SNAPSHOT-all.jar -mode=offline
