@@ -16,6 +16,8 @@ import com.godaddy.icfp2017.services.analysis.SiteConnectivityAnalyzer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jgrapht.alg.shortestpath.FloydWarshallShortestPaths;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilderBase;
@@ -326,7 +328,39 @@ public class GameLogic implements AutoCloseable {
     }
   }
 
+  // Given a set of values and a node,
+  // go to each connected edge, and copy missing weights
+  // recurse
+
+  private void dfs(
+      final State state,
+      final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
+      final ConcurrentHashMap<Site, Integer> values,
+      final Site node,
+      final HashMap<Site, Boolean> seen
+  ) {
+    seen.put(node, true);
+
+    graphOfEnemyMoves.edgesOf(node).forEach(river -> {
+      // Copy weights over
+      values.forEach((site, weight) -> {
+        if (river.getMaxEnemyPathFromSites().containsKey(site) == false) {
+          river.getMaxEnemyPathFromSites().put(site, weight + 1);
+        }
+      });
+
+      // iterate
+      Site target = state.getSiteToMap().get(river.getSource()) == node ?
+                      state.getSiteToMap().get(river.getTarget()) : node;
+
+      if (!seen.containsKey(target)) {
+        dfs(state, graphOfEnemyMoves, river.getMaxEnemyPathFromSites(), target, seen);
+      }
+    });
+  }
+
   private void addEnemyEdge(
+      final State state,
       final SimpleWeightedGraph<Site, River> graphOfEnemyMoves,
       final Site sourceVertex,
       final Site targetVertex,
@@ -334,6 +368,10 @@ public class GameLogic implements AutoCloseable {
       final int punter) {
     // Look at source, and for each site
     //  compute the min weight across all edges. This will be the the path closest to the site
+    //  this will be the weight for this edge
+    //  do this for both source and target
+
+    // Then we have to "extend" the weights from source through target, and from target through source
 
     Preconditions.checkState(edge.getMaxEnemyPathFromSites().size() == 0);
 
@@ -373,10 +411,18 @@ public class GameLogic implements AutoCloseable {
       edge.getMaxEnemyPathFromSites().put(targetVertex, 1);
     }
 
+    // Let's propagate
+
     // TODO:
     // We have to propagate weights collected from rivers connected to source to all rivers connected to target
     // (including source site)
     // And vice versa
+
+    HashMap<Site, Boolean> seen = new HashMap<>();
+    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), targetVertex, seen);
+
+    seen = new HashMap<>();
+    dfs(state, graphOfEnemyMoves, edge.getMaxEnemyPathFromSites(), sourceVertex, seen);
 
     // Add enemy moves, and update the path length
     graphOfEnemyMoves.addEdge(sourceVertex, targetVertex, edge);
@@ -410,9 +456,8 @@ public class GameLogic implements AutoCloseable {
 
              // but add this edge to the enemy moves
              System.out.println("Add enemy edge " + edge.toString());
-             addEnemyEdge(graphOfEnemyMoves, sourceVertex, targetVertex, edge, claim.getPunter());
-           }
-           else {
+             addEnemyEdge(state, graphOfEnemyMoves, sourceVertex, targetVertex, edge, claim.getPunter());
+           } else {
              // if we own the edge mark it as weight 0, it's free to use
              graph.setEdgeWeight(edge, 0.0);
            }
