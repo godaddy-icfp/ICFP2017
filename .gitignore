@@ -29,5 +29,6 @@ classes/
 *.iml
 
 submission/ICFP2017-1.0-SNAPSHOT-all.jar
-submission/src/ICFP2017-src.tar.gz
+submission/src/
+!submission/src/README
 icfp-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.tar.gz

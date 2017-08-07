@@ -47,7 +47,7 @@ public class GameStrategy {
     if (mstFinished(state)) {
       return pathExtendStrategy;
     }
-    if (minesConnected(state)) {
+    if (!minesConnected(state)) {
       return mineAcquireStrategy;
     }
 
