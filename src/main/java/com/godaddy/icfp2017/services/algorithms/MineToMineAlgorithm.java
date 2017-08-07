@@ -18,7 +18,7 @@ final public class MineToMineAlgorithm extends BaseAlgorithm {
 
   static double pathWeight(final double weight, final double length, final double optimalLength, final double diameter) {
     Preconditions.checkArgument(weight <= length);
-    final double smoothedOwnership = (length - weight + 1.0) / (length + 1.0);
+    final double smoothedOwnership = (optimalLength - weight + 1.0) / (length + 1.0);
     final double l0 = optimalLength * optimalLength;
     final double d0 = diameter * diameter;
     final double percentage = Math.min(smoothedOwnership * (l0 / d0), 1.0);
