@@ -9,6 +9,7 @@ public enum Algorithms implements Timeable {
   Connectedness,
   MineToMine,
   MinimumSpanningTree,
+  PathExtension,
   EnemyPath,
   ScoringAlgo;
 
