@@ -20,9 +20,11 @@ public class GameStrategy {
       .put(Algorithms.ScoringAlgo, 0.6)
       .put(Algorithms.EnemyPath, 0.25)
       .put(Algorithms.PathExtension, 0.1)
+      .put(Algorithms.FullMST, 0.1)
       .build();
 
-  private final ImmutableMap<Algorithms, Double> minimumSpanningTreeStrategy = ImmutableMap.<Algorithms, Double>builder()
+  private final ImmutableMap<Algorithms, Double> minimumSpanningTreeStrategy = ImmutableMap.<Algorithms,
+      Double>builder()
       .put(Algorithms.AdjacentToMine, 0.25)
       .put(Algorithms.AdjacentToPath, 0.25)
       .put(Algorithms.ConnectedDecision, 0.25)
@@ -32,6 +34,7 @@ public class GameStrategy {
       .put(Algorithms.ScoringAlgo, 0.8)
       .put(Algorithms.EnemyPath, 0.25)
       .put(Algorithms.PathExtension, 0.25)
+      .put(Algorithms.FullMST, 0.25)
       .build();
 
   private final ImmutableMap<Algorithms, Double> pathExtendStrategy = ImmutableMap.<Algorithms, Double>builder()
@@ -44,6 +47,7 @@ public class GameStrategy {
       .put(Algorithms.ScoringAlgo, 0.8)
       .put(Algorithms.EnemyPath, 0.5)
       .put(Algorithms.PathExtension, 1.0)
+      .put(Algorithms.FullMST, 1.0)
       .build();
 
   public ImmutableMap<Algorithms, Double> getStrategy(State state) {
@@ -62,9 +66,9 @@ public class GameStrategy {
       // Trying too long...
       return true;
     }
-    for (Site site: state.getMines()) {
+    for (Site site : state.getMines()) {
       boolean isAvailable = false;
-      for (River river: state.getGraph().edgesOf(site)) {
+      for (River river : state.getGraph().edgesOf(site)) {
         if (!river.isClaimed() && !site.isOwned()) {
           return false;
         }
@@ -75,9 +79,10 @@ public class GameStrategy {
 
   private boolean mstFinished(final State state) {
     boolean notFinished = state.getGraph().edgeSet()
-        .stream()
-        .filter(river -> !river.isClaimed())
-        .anyMatch(river -> river.getAlgorithmWeights().get(Algorithms.MinimumSpanningTree) != null);
+                               .stream()
+                               .filter(river -> !river.isClaimed())
+                               .anyMatch(river -> river.getAlgorithmWeights().get(Algorithms.MinimumSpanningTree) !=
+                                                  null);
 
     return !notFinished;
   }

@@ -11,7 +11,8 @@ public enum Algorithms implements Timeable {
   MinimumSpanningTree,
   PathExtension,
   EnemyPath,
-  ScoringAlgo;
+  ScoringAlgo,
+  FullMST;
 
 
   @Override

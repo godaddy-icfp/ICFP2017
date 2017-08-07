@@ -26,6 +26,7 @@ public class GameAlgorithms implements AutoCloseable {
           .put(Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new)
           .put(Algorithms.EnemyPath, EnemyPathWeightAlgorithm::new)
           .put(Algorithms.PathExtension, PathExtensionAlgorithm::new)
+          .put(Algorithms.FullMST, FullMSTAlgorithm::new)
           .build();
 
   private static final EnumSet<Algorithms> DefaultAlgorithms =
