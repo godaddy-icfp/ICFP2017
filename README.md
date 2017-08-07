@@ -2,10 +2,6 @@
 
 2017 ICFP Programming Contest at https://icfpcontest2017.github.io/
 
-## Issues and things needed to be done
-
-Please use the issues tab for known actions that need work to ensure we have a good feel for ongoing work.
-
 ## How to build
 
 ```bash
@@ -71,4 +67,15 @@ Ignore the port for the game - the local server supports only one game
 
 ## Overview notes
 
+Test and description links
+
+- Overview - <https://icfpcontest2017.github.io/>
+- Map Viewer - <http://punter.inf.ed.ac.uk/graph-viewer/>
+- Interactive Player UI - <http://punter.inf.ed.ac.uk/puntfx/>
+- Test Server Status - <http://punter.inf.ed.ac.uk/status.html>
+
+Initial design conversation notes:
+
 ![Notes](Notes.png)
+
+Published submission was at https://drive.google.com/open?id=0BzsKZZJ1xvVIa3h3WTROTzlPMUU
