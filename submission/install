@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+echo Using a Java shadow JAR from http://imperceptiblethoughts.com/shadow/, so no install required!
