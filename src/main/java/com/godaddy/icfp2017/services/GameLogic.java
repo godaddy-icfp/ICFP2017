@@ -1,6 +1,11 @@
 package com.godaddy.icfp2017.services;
 
-import com.godaddy.icfp2017.models.*;
+import com.godaddy.icfp2017.models.GameplayP2S;
+import com.godaddy.icfp2017.models.GameplayS2P;
+import com.godaddy.icfp2017.models.SetupP2S;
+import com.godaddy.icfp2017.models.SetupS2P;
+import com.godaddy.icfp2017.models.State;
+
 import java.io.PrintStream;
 
 public class GameLogic {
@@ -13,6 +18,7 @@ public class GameLogic {
   public GameLogic(final PrintStream debugStream) {
     this.gameInitiator = new GameInitiator(debugStream);
     this.debugStream = debugStream;
+    ;
   }
 
   public SetupP2S setup(final SetupS2P setup) {
@@ -25,6 +31,6 @@ public class GameLogic {
   }
 
   public GameplayP2S move(final GameplayS2P move) {
-    return new GameMove(this.currentState, this.debugStream).getMove(move);
+    return new GameMove(this.currentState, debugStream, new GameAlgorithms(debugStream)).getMove(move);
   }
 }

@@ -15,7 +15,7 @@ public class GameStrategy {
       .put(Algorithms.Connectedness, 0.25)
       .put(Algorithms.MineToMine, 1.0)
       .put(Algorithms.MinimumSpanningTree, 0.8)
-      .put(Algorithms.ScoringAlgo, 0.8)
+      .put(Algorithms.ScoringAlgo, 0.6)
       .build();
 
   private final ImmutableMap<Algorithms, Double> minimumSpanningTreeStrategy = ImmutableMap.<Algorithms, Double>builder()
@@ -35,7 +35,7 @@ public class GameStrategy {
       .put(Algorithms.Connectedness, 0.5)
       .put(Algorithms.MineToMine, 1.0)
       .put(Algorithms.MinimumSpanningTree, 1.0)
-      .put(Algorithms.ScoringAlgo, 1.0)
+      .put(Algorithms.ScoringAlgo, 0.8)
       .build();
 
   private ImmutableMap<Algorithms, Double> strategyState = mineAcquireStrategy;

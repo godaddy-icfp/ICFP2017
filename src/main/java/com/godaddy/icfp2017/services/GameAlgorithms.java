@@ -1,44 +1,57 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.State;
-import com.godaddy.icfp2017.services.algorithms.AdjacentToMinesAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AdjacentToPathAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AlgorithmFactory;
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
-import com.godaddy.icfp2017.services.algorithms.ConnectedDecisionAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.ConnectednessAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.MineToMineAlgorithm;
+import com.godaddy.icfp2017.services.algorithms.*;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 import java.io.PrintStream;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class GameAlgorithms {
+public class GameAlgorithms implements AutoCloseable {
 
-  private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators =
+  private static final ImmutableMap<Algorithms, AlgorithmFactory> AllAlgorithmCreators =
       ImmutableMap.<Algorithms, AlgorithmFactory>builder()
           .put(Algorithms.AdjacentToMine, AdjacentToMinesAlgorithm::new)
           .put(Algorithms.AdjacentToPath, AdjacentToPathAlgorithm::new)
           .put(Algorithms.ConnectedDecision, ConnectedDecisionAlgorithm::new)
           .put(Algorithms.Connectedness, ConnectednessAlgorithm::new)
           .put(Algorithms.MineToMine, MineToMineAlgorithm::new)
-          //.put(Algorithms.ScoringAlgo, MinePathsScoreAlgorithm::new)
-          //.put(Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new)
+          .put(Algorithms.ScoringAlgo, MinePathsScoreAlgorithm::new)
+          .put(Algorithms.MinimumSpanningTree, MinimumSpanningTreeAlgorithm::new)
           .build();
 
-  private final PrintStream debugStream;
+  private static final EnumSet<Algorithms> DefaultAlgorithms =
+      EnumSet.complementOf(
+          EnumSet.of(Algorithms.MinimumSpanningTree,
+                     Algorithms.ScoringAlgo));
 
-  public GameAlgorithms(PrintStream debugStream) {
+  private final ImmutableMap<Algorithms, AlgorithmFactory> algorithmCreators;
+  ;
+
+  private final PrintStream debugStream;
+  final ExecutorService executorService;
+
+  public GameAlgorithms(final PrintStream debugStream) {
+    this(debugStream, DefaultAlgorithms);
+  }
+
+  public GameAlgorithms(
+      final PrintStream debugStream,
+      final Set<Algorithms> algorithmsToUse) {
     this.debugStream = debugStream;
+    algorithmCreators = ImmutableMap.copyOf(Maps.filterKeys(AllAlgorithmCreators, algorithmsToUse::contains));
+    executorService = Executors.newFixedThreadPool(algorithmCreators.size());
   }
 
   private final Long MAX_TURN_TIME = 900L;
 
   public void run(State state, Long startTime) {
-    final ExecutorService executorService = Executors.newFixedThreadPool(algorithmCreators.size());
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
     Long timeAvailable = MAX_TURN_TIME - (System.currentTimeMillis() - startTime);
@@ -47,11 +60,13 @@ public class GameAlgorithms {
       executorService.submit(() -> {
         try {
           graphAlgorithm.run(algorithm, state);
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
           this.debugStream.print(algorithm);
           this.debugStream.print(" Error: ");
           e1.printStackTrace(this.debugStream);
-        } finally {
+        }
+        finally {
           completeLatch.countDown();
         }
       });
@@ -59,12 +74,12 @@ public class GameAlgorithms {
     try {
       final boolean allCompleted = completeLatch.await(timeAvailable, TimeUnit.MILLISECONDS);
       if (!allCompleted) {
-        this.debugStream.println("Some algorithms didn't finish");
+        debugStream.println("Some algorithms didn't finish");
       }
-    } catch (InterruptedException e) {
+    }
+    catch (InterruptedException e) {
       // ignore so we respond
     }
-    executorService.shutdown();
   }
 
   public GraphAlgorithm getGraphAlgorithm(Algorithms algorithm) {
@@ -81,7 +96,12 @@ public class GameAlgorithms {
     throw new UnsupportedOperationException("No Algorithm creator defined for: " + algorithm);
   }
 
-   public boolean isUsingAlgorithm(final Algorithms algorithm) {
+  public boolean isUsingAlgorithm(final Algorithms algorithm) {
     return algorithmCreators.containsKey(algorithm);
+  }
+
+  @Override
+  public void close() throws Exception {
+    executorService.shutdown();
   }
 }

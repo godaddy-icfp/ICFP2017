@@ -8,12 +8,13 @@ import com.godaddy.icfp2017.models.River;
 import com.godaddy.icfp2017.models.Site;
 import com.godaddy.icfp2017.models.State;
 import com.google.common.base.Preconditions;
+import org.jgrapht.graph.SimpleWeightedGraph;
+
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jgrapht.graph.SimpleWeightedGraph;
 
 public class GameMove {
 
@@ -25,10 +26,13 @@ public class GameMove {
 
   private State initialState;
 
-  public GameMove(State initialState, PrintStream debugStream) {
+  public GameMove(
+      final State initialState,
+      final PrintStream debugStream,
+      final GameAlgorithms algorithms) {
     this.debugStream = debugStream;
     this.gameAnalyzer = new GameAnalyzer();
-    this.gameAlgorithms = new GameAlgorithms(debugStream);
+    this.gameAlgorithms = algorithms;
     this.gameDecision = new GameDecision(debugStream);
     this.initialState = initialState;
   }
@@ -37,20 +41,22 @@ public class GameMove {
     Long startTime = System.currentTimeMillis();
 
     final State moveState = getState(move);
+
+
+    zeroClaimedEdges(move.getPreviousMoves(),
+                     moveState.getGraph(),
+                     moveState.getGraphOfEnemyMoves(),
+                     moveState);
+
     gameAnalyzer.run(moveState);
     gameAlgorithms.run(moveState, startTime);
     return gameDecision.getDecision(moveState);
-
   }
 
   private State getState(GameplayS2P move) {
     final State currentState = Optional.ofNullable(move.getPreviousState())
-        .orElseGet(() -> Optional.ofNullable(this.initialState)
-            .orElseThrow(IllegalStateException::new));
-    zeroClaimedEdges(move.getPreviousMoves(),
-        currentState.getGraph(),
-        currentState.getGraphOfEnemyMoves(),
-        currentState);
+                                       .orElseGet(() -> Optional.ofNullable(this.initialState)
+                                                                .orElseThrow(IllegalStateException::new));
     return currentState;
   }
 
@@ -63,33 +69,35 @@ public class GameMove {
 
     final List<Move> moves = previousMoves.getMoves();
     moves.stream()
-        .filter(m -> m.getClaim() != null)
-        .map(Move::getClaim)
-        .forEach(claim -> {
-          final Site sourceVertex = state.getSiteToMap().get(claim.getSource());
-          final Site targetVertex = state.getSiteToMap().get(claim.getTarget());
-          final River edge = Optional.ofNullable(graph.getEdge(sourceVertex, targetVertex))
-              .orElseGet(() -> graph.getEdge(targetVertex, sourceVertex));
-          if (edge == null) {
-            return;
-          }
+         .filter(m -> m.getClaim() != null)
+         .map(Move::getClaim)
+         .forEach(claim -> {
+           final Site sourceVertex = state.getSiteToMap().get(claim.getSource());
+           final Site targetVertex = state.getSiteToMap().get(claim.getTarget());
+           final River edge = Optional.ofNullable(graph.getEdge(sourceVertex, targetVertex))
+                                      .orElseGet(() -> graph.getEdge(targetVertex, sourceVertex));
+           if (edge == null) {
+             return;
+           }
 
-          edge.setClaimedBy(claim.getPunter());
+           edge.setClaimedBy(claim.getPunter());
 
-          if (state.getPunter() != claim.getPunter()) {
-            // remove this edge entirely from the graph so we can avoid
-            // traversing it during any analysis passes
-            graph.removeEdge(edge);
+           if (state.getPunter() != claim.getPunter()) {
+             // remove this edge entirely from the graph so we can avoid
+             // traversing it during any analysis passes
+             graph.removeEdge(edge);
 
-            // but add this edge to the enemy moves
-            System.out.println("Add enemy edge " + edge.toString());
-            addEnemyEdge(state, graphOfEnemyMoves, sourceVertex, targetVertex, edge,
-                claim.getPunter());
-          } else {
-            // if we own the edge mark it as weight 0, it's free to use
-            graph.setEdgeWeight(edge, 0.0);
-          }
-        });
+             // but add this edge to the enemy moves
+             debugStream.println("Add enemy edge " + edge.toString());
+             addEnemyEdge(state, graphOfEnemyMoves,
+                          sourceVertex, targetVertex, edge,
+                          claim.getPunter());
+           }
+           else {
+             // if we own the edge mark it as weight 0, it's free to use
+             graph.setEdgeWeight(edge, 0.0);
+           }
+         });
   }
 
   private void addEnemyEdge(
@@ -109,26 +117,28 @@ public class GameMove {
     Preconditions.checkState(edge.getMaxEnemyPathFromSites().size() == 0);
 
     graphOfEnemyMoves.edgesOf(sourceVertex).stream().filter(river -> river.getClaimedBy() == punter)
-        .forEach(river -> river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
-          if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
-            if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
-              edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-            }
-          } else {
-            edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-          }
-        }));
+                     .forEach(river -> river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
+                       if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
+                         if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
+                           edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+                         }
+                       }
+                       else {
+                         edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+                       }
+                     }));
 
     graphOfEnemyMoves.edgesOf(targetVertex).stream().filter(river -> river.getClaimedBy() == punter)
-        .forEach(river -> river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
-          if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
-            if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
-              edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-            }
-          } else {
-            edge.getMaxEnemyPathFromSites().put(site, weight + 1);
-          }
-        }));
+                     .forEach(river -> river.getMaxEnemyPathFromSites().forEach((site, weight) -> {
+                       if (edge.getMaxEnemyPathFromSites().containsKey(site)) {
+                         if ((weight + 1) < edge.getMaxEnemyPathFromSites().get(site)) {
+                           edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+                         }
+                       }
+                       else {
+                         edge.getMaxEnemyPathFromSites().put(site, weight + 1);
+                       }
+                     }));
 
     // Check if the source is a mine
     if (sourceVertex.isMine()) {
@@ -170,7 +180,7 @@ public class GameMove {
       final Site node,
       final HashMap<Site, Boolean> seen,
       final int punter
-  ) {
+                  ) {
     seen.put(node, true);
 
     graphOfEnemyMoves.edgesOf(node).forEach(river -> {
@@ -184,7 +194,7 @@ public class GameMove {
 
         // iterate
         Site target = state.getSiteToMap().get(river.getSource()) == node ?
-            state.getSiteToMap().get(river.getTarget()) : node;
+                      state.getSiteToMap().get(river.getTarget()) : node;
 
         if (!seen.containsKey(target)) {
           dfs(state, graphOfEnemyMoves, river.getMaxEnemyPathFromSites(), target, seen, punter);
