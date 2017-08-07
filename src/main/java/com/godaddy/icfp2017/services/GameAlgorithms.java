@@ -1,19 +1,7 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.State;
-<<<<<<< HEAD
 import com.godaddy.icfp2017.services.algorithms.*;
-=======
-import com.godaddy.icfp2017.services.algorithms.AdjacentToMinesAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AdjacentToPathAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.AlgorithmFactory;
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
-import com.godaddy.icfp2017.services.algorithms.ConnectedDecisionAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.ConnectednessAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.EnemyPathWeightAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.GraphAlgorithm;
-import com.godaddy.icfp2017.services.algorithms.MineToMineAlgorithm;
->>>>>>> Implement the algorithm and compute weights to block enemies.
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
