@@ -14,7 +14,7 @@ sockets = Sockets(app)
 games = {"sample.json" : 2,
          "lambda.json" : 3,
          "sierpinski-triangle" : 3}
-selected_game = "lambda.json"
+selected_game = "sample.json"
 max_players = games[selected_game]
 
 with open(selected_game) as data_file:
