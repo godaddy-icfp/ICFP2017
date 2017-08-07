@@ -15,6 +15,8 @@ public class Site implements Serializable {
   private double x;
   private double y;
 
+  private static final long serialVersionUID = 2513236575731581196L;
+
   // Statistics based on radius zero (edges connected directly)
   private int ownedConnectedRivers;
   private int totalConnectedRivers;

@@ -7,6 +7,8 @@ import com.google.common.base.Objects;
 import java.io.Serializable;
 
 public class Path implements Comparable<Path>, Serializable {
+  private static final long serialVersionUID = 42L;
+
   private int source;
   private int target;
   private int score;
