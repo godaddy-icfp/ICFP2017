@@ -8,11 +8,11 @@ import de.javakaffee.kryoserializers.guava.ImmutableSetSerializer;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 
-class KryoFactory {
+public class KryoFactory {
   private KryoFactory() {
   }
 
-  static Kryo createKryo() {
+  public static Kryo createKryo() {
     final Kryo kryo = new Kryo();
     kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
     kryo.register(SimpleWeightedGraph.class, new JavaSerializer());

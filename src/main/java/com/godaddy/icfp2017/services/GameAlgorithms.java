@@ -55,7 +55,7 @@ public class GameAlgorithms implements AutoCloseable {
   public void run(State state, Long startTime) {
     final CountDownLatch completeLatch = new CountDownLatch(algorithmCreators.size());
 
-    Long timeAvailable = MAX_TURN_TIME - (System.currentTimeMillis() - startTime);
+    long timeAvailable = MAX_TURN_TIME - (System.currentTimeMillis() - startTime);
     for (Algorithms algorithm : algorithmCreators.keySet()) {
       final GraphAlgorithm graphAlgorithm = getGraphAlgorithm(algorithm);
       executorService.submit(() -> {
@@ -77,6 +77,7 @@ public class GameAlgorithms implements AutoCloseable {
       if (!allCompleted) {
         debugStream.println("Some algorithms didn't finish");
       }
+      debugStream.println("had " + timeAvailable + " time available");
     }
     catch (InterruptedException e) {
       // ignore so we respond

@@ -24,23 +24,28 @@ public class GameMove {
   private GameAlgorithms gameAlgorithms;
   private GameDecision gameDecision;
 
-  private State initialState;
+  private State moveState;
 
   public GameMove(
       final State initialState,
       final PrintStream debugStream,
       final GameAlgorithms algorithms) {
+    this(initialState, debugStream, algorithms, new GameDecision(debugStream));
+  }
+
+  public GameMove(
+      final State moveState,
+      final PrintStream debugStream,
+      final GameAlgorithms algorithms,
+      final GameDecision decision) {
     this.debugStream = debugStream;
     this.gameAnalyzer = new GameAnalyzer();
     this.gameAlgorithms = algorithms;
-    this.gameDecision = new GameDecision(debugStream);
-    this.initialState = initialState;
+    this.gameDecision = decision;
+    this.moveState = moveState;
   }
 
-  public GameplayP2S getMove(final GameplayS2P move) {
-    Long startTime = System.currentTimeMillis();
-
-    final State moveState = getState(move);
+  public GameplayP2S getMove(final long startTime, final GameplayS2P move) {
     for (final River river : moveState.getGraph().edgeSet()) {
       if (river.getAlgorithmWeights() != null) {
         river.getAlgorithmWeights().clear();
@@ -55,13 +60,6 @@ public class GameMove {
     gameAnalyzer.run(moveState);
     gameAlgorithms.run(moveState, startTime);
     return gameDecision.getDecision(moveState);
-  }
-
-  private State getState(GameplayS2P move) {
-    final State currentState = Optional.ofNullable(move.getPreviousState())
-                                       .orElseGet(() -> Optional.ofNullable(this.initialState)
-                                                                .orElseThrow(IllegalStateException::new));
-    return currentState;
   }
 
 
