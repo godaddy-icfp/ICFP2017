@@ -1,7 +1,6 @@
 package com.godaddy.icfp2017.services;
 
 import com.godaddy.icfp2017.models.*;
-import com.godaddy.icfp2017.services.algorithms.Algorithms;
 import com.godaddy.icfp2017.services.analysis.MineToMinePathAnalyzer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -26,34 +25,11 @@ public class GameLogic {
 
   private State currentState;
 
-  // These are constants that value algorithms over all rivers
-  // It allows us to select which algorithms are valuable (and which are not) for this particular move
-  private final ImmutableMap<Algorithms, Double> algorithmValuesMineAcquire = ImmutableMap.<Algorithms, Double>builder()
-      .put(Algorithms.AdjacentToMine, 0.8)
-      .put(Algorithms.AdjacentToPath, 0.25)
-      .put(Algorithms.ConnectedDecision, 0.25)
-      .put(Algorithms.Connectedness, 0.25)
-      .put(Algorithms.MineToMine, 1.0)
-      .put(Algorithms.MinimumSpanningTree, 0.8)
-      .put(Algorithms.ScoringAlgo, 0.8)
-      .build();
-
-  private final ImmutableMap<Algorithms, Double> algorithmValuesProgress = ImmutableMap.<Algorithms, Double>builder()
-      .put(Algorithms.AdjacentToMine, 0.5)
-      .put(Algorithms.AdjacentToPath, 0.5)
-      .put(Algorithms.ConnectedDecision, 0.25)
-      .put(Algorithms.Connectedness, 0.5)
-      .put(Algorithms.MineToMine, 1.0)
-      .put(Algorithms.MinimumSpanningTree, 1.0)
-      .put(Algorithms.ScoringAlgo, 1.0)
-      .build();
-
-  private ImmutableMap<Algorithms, Double> strategyState = algorithmValuesMineAcquire;
-
   public GameLogic(final PrintStream debugStream) {
     this.debugStream = debugStream;
     this.gameAnalyzer = new GameAnalyzer();
     this.gameAlgorithms = new GameAlgorithms(this.debugStream);
+    this.gameDecision = new GameDecision(this.debugStream);
   }
 
   public SetupP2S setup(final SetupS2P setup) {
@@ -81,29 +57,6 @@ public class GameLogic {
     this.currentState = state;
 
     return response;
-  }
-
-  private Optional<River> computeWeightOnGraph(
-      final State state,
-      final ImmutableMap<Algorithms, Double> algorithmValues) {
-    // Pick any river
-    River bestRiver = null;
-    double bestWeight = 0.0;
-
-    for (River river : state.getGraph().edgeSet()) {
-      double weight = river.getAlgorithmWeights().entrySet().stream()
-          .mapToDouble(e -> e.getValue() * algorithmValues.get(e.getKey()))
-          .reduce(1.0, (x, y) -> x * y);
-      state.getGraph().setEdgeWeight(river, weight);
-      if (!river.isClaimed() && (weight > bestWeight)) {
-        bestWeight = weight;
-        bestRiver = river;
-      }
-    }
-
-    // sometimes we get called and don't produce a river (because they all score 0.0)
-    // while we can do a better job, let's just send a pass for now to avoid crashing
-    return Optional.ofNullable(bestRiver);
   }
 
   static Pair<ImmutableSet<Site>, SimpleWeightedGraph<Site, River>> buildGraph(
@@ -174,6 +127,7 @@ public class GameLogic {
 
   private GameAnalyzer gameAnalyzer;
   private GameAlgorithms gameAlgorithms;
+  private GameDecision gameDecision;
 
   public GameplayP2S move(
       final GameplayS2P move) {
@@ -182,46 +136,7 @@ public class GameLogic {
     final State currentState = getState(move);
     gameAnalyzer.run(currentState);
     gameAlgorithms.run(currentState, startTime);
-
-    final GameplayP2S response = calculateBestMove(currentState);
-    response.setState(currentState);
-
-    return response;
-  }
-
-  private GameplayP2S calculateBestMove(State currentState) {
-    if (!mineAdjacenciesExist(currentState)) {
-      strategyState = algorithmValuesProgress;
-    }
-
-    // Compute all the weight
-    Optional<River> bestRiver = this.computeWeightOnGraph(currentState, strategyState);
-
-    //debug best river weighting
-    double bestRiverWeight = currentState.getGraph().getEdgeWeight(bestRiver.get());
-    debugStream.println(String.format("riverWeight: %s", bestRiverWeight));
-    debugStream.println(
-        String.format("algoWeights: %s", bestRiver.get().getAlgorithmWeights().toString()));
-
-    // initialize the response
-    return bestRiver
-        .map(river -> {
-          final GameplayP2S r = new GameplayP2S();
-          final Claim claim = new Claim();
-          claim.setPunter(currentState.getPunter());
-          claim.setTarget(river.getTarget());
-          claim.setSource(river.getSource());
-          river.setClaimedBy(currentState.getPunter());
-          r.setClaim(claim);
-          return r;
-        })
-        .orElseGet(() -> {
-          final GameplayP2S r = new GameplayP2S();
-          final Pass pass = new Pass();
-          pass.setPunter(currentState.getPunter());
-          r.setPass(pass);
-          return r;
-        });
+    return gameDecision.getDecision(currentState);
   }
 
   private State getState(GameplayS2P move) {
@@ -371,18 +286,5 @@ public class GameLogic {
             graph.setEdgeWeight(edge, 0.0);
           }
         });
-  }
-
-  private boolean mineAdjacenciesExist(State state) {
-    long mineAdjacencyCount = state
-        .getMines()
-        .stream()
-        .flatMap(mine -> state.getGraph()
-            .edgesOf(mine)
-            .stream()
-            .filter(river -> !river.isClaimed()))
-        .count();
-
-    return mineAdjacencyCount > 0;
   }
 }
