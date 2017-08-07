@@ -91,7 +91,7 @@ public class GameLogicTests {
   }
 
   @Test
-  public void verify_weights_are_set() throws IOException {
+  public void verify_weights_in_bound() throws IOException {
     GameLogic impl = new GameLogic(System.err);
     final SetupP2S setup = impl.setup(loadBigSetup());
     State state = setup.getState();
@@ -108,7 +108,6 @@ public class GameLogicTests {
         System.out.println("Validating weight settings for " + algorithm.toString());
         state.getGraph().edgeSet()
              .forEach(river -> {
-               assertTrue(river.getAlgorithmWeights().size() > 0);
                river.getAlgorithmWeights().values().forEach(weight -> {
                  assertTrue(weight <= 1.0);
                  assertTrue(weight > 0.0);
